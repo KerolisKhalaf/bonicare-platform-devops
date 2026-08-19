@@ -55,6 +55,10 @@ export class LoginComponent {
     });
   }
 
+  onGoogleSignIn(): void {
+    this.toast.success('Google authentication is coming soon!');
+  }
+
   fieldError(field: 'email' | 'password'): string | undefined {
     const control = this.form.get(field);
     const validation =

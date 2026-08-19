@@ -1,5 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { AppointmentApiService } from '../../core/services/appointment-api.service';
 import { DoctorApiService } from '../../core/services/doctor-api.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -43,6 +44,7 @@ export class AppointmentsComponent implements OnInit {
   readonly doctors = signal<DoctorProfile[]>([]);
   readonly availability = signal<DoctorAvailability[]>([]);
   readonly showBooking = signal(false);
+  readonly bookingError = signal<string | null>(null);
 
   readonly bookForm = this.fb.nonNullable.group({
     doctorId: ['', Validators.required],
@@ -79,9 +81,18 @@ export class AppointmentsComponent implements OnInit {
     this.api.getDoctorAvailability(doctorId).subscribe((res) => this.availability.set(res.data ?? []));
   }
 
+  getDoctorAvatar(doctor: DoctorProfile): string {
+    const name = this.getDoctorName(doctor);
+    if (name.toLowerCase().includes('sara')) {
+      return '/images/drsara.png';
+    }
+    return '/images/maledr.png';
+  }
+
   book(): void {
     if (this.bookForm.invalid) return;
     this.booking.set(true);
+    this.bookingError.set(null);
     const raw = this.bookForm.getRawValue();
     this.api.bookAppointment({
       ...raw,
@@ -96,7 +107,12 @@ export class AppointmentsComponent implements OnInit {
         this.loadAppointments();
         this.booking.set(false);
       },
-      error: () => this.booking.set(false),
+      error: (err: HttpErrorResponse | any) => {
+        this.booking.set(false);
+        const errMsg = err?.error?.message || err?.message || 'Appointment booking failed. Please check slot availability.';
+        this.bookingError.set(errMsg);
+        this.toast.error('Booking failed');
+      },
     });
   }
 

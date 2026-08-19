@@ -1,6 +1,9 @@
 <div class="auth-form">
-  <h2>Create account</h2>
-  <p class="auth-form__subtitle">Join BoniCare as a patient or doctor</p>
+  <div class="auth-form-header">
+    <img src="/images/boniecare logo.png" class="auth-form-logo" alt="BoniCare Logo" />
+    <h2>Create account</h2>
+    <p class="auth-form__subtitle">Join BoniCare as a patient or doctor</p>
+  </div>
 
   @if (serverError()) {
     <div class="auth-alert auth-alert--error" role="alert">
@@ -32,6 +35,15 @@
       Create account
     </bc-button>
   </form>
+
+  <div class="google-auth-divider">
+    <span>Or continue with</span>
+  </div>
+
+  <button type="button" class="google-auth-btn" (click)="onGoogleSignIn()">
+    <img src="/images/google-icon.png" alt="Google" />
+    <span>Sign up with Google</span>
+  </button>
 
   <p class="auth-form__footer">
     Already have an account? <a routerLink="/auth/login">Sign in</a>

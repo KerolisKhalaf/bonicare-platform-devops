@@ -58,6 +58,10 @@ export class SignupComponent {
     });
   }
 
+  onGoogleSignIn(): void {
+    this.toast.success('Google authentication is coming soon!');
+  }
+
   fieldError(field: 'name' | 'email' | 'password' | 'phone'): string | undefined {
     const control = this.form.get(field);
     let validation: string | undefined;

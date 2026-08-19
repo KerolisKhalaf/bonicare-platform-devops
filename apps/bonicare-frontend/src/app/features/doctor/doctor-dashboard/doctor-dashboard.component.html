@@ -23,9 +23,18 @@
           </form>
         } @else {
           <div class="profile-summary">
-            <p><strong>Specialty:</strong> {{ profile()?.specialty ?? '—' }}</p>
-            <p><strong>Hospital:</strong> {{ profile()?.hospitalInfo ?? '—' }}</p>
-            <p><strong>Experience:</strong> {{ profile()?.yearsOfExperience ?? 0 }} years</p>
+            <div class="profile-summary__header">
+              <img [src]="getDoctorAvatar()" class="profile-summary__avatar" alt="Doctor Avatar" />
+              <div class="profile-summary__details">
+                <strong>{{ user()?.name }}</strong>
+                <span class="profile-summary__email">{{ user()?.email }}</span>
+              </div>
+            </div>
+            <div class="profile-summary__fields">
+              <p><strong>Specialty:</strong> {{ profile()?.specialty ?? '—' }}</p>
+              <p><strong>Hospital:</strong> {{ profile()?.hospitalInfo ?? '—' }}</p>
+              <p><strong>Experience:</strong> {{ profile()?.yearsOfExperience ?? 0 }} years</p>
+            </div>
             <bc-button variant="outline" size="sm" (clicked)="showProfileForm.set(true)">Edit Profile</bc-button>
           </div>
         }

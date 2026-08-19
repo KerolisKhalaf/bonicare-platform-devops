@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { DoctorApiService } from '../../../core/services/doctor-api.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { CardComponent } from '../../../shared/ui/card/card.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { InputComponent } from '../../../shared/ui/input/input.component';
@@ -32,12 +33,22 @@ export class DoctorDashboardComponent implements OnInit {
   private readonly doctorApi = inject(DoctorApiService);
   private readonly fb = inject(FormBuilder);
   private readonly toast = inject(ToastService);
+  private readonly auth = inject(AuthService);
 
+  readonly user = this.auth.user;
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly profile = signal<DoctorProfile | null>(null);
   readonly appointments = signal<Appointment[]>([]);
   readonly showProfileForm = signal(false);
+
+  getDoctorAvatar(): string {
+    const u = this.user();
+    if (u && u.name?.toLowerCase().includes('sara')) {
+      return '/images/drsara.png';
+    }
+    return '/images/maledr.png';
+  }
 
   readonly profileForm = this.fb.nonNullable.group({
     specialty: [''],

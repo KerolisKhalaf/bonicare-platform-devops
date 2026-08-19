@@ -26,9 +26,14 @@
       </bc-card>
       <bc-card title="Profile">
         @if (patient()) {
-          <div class="profile-info">
-            <span>Gender: {{ patient()?.gender ?? 'Not set' }}</span>
-            <span>Member since: {{ patient()?.createdAt | dateFormat }}</span>
+          <div class="profile-card-content">
+            <img [src]="getPatientAvatar()" class="profile-card-avatar" alt="Patient Avatar" />
+            <div class="profile-card-details">
+              <strong>{{ user()?.name }}</strong>
+              <span class="profile-card-email">{{ user()?.email }}</span>
+              <span>Gender: {{ patient()?.gender ?? 'Not set' }}</span>
+              <span class="profile-card-date">Member since: {{ patient()?.createdAt | dateFormat }}</span>
+            </div>
           </div>
         }
       </bc-card>

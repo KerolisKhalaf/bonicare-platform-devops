@@ -10,17 +10,36 @@
 
   @if (showBooking() && isPatient) {
     <bc-card title="Book New Appointment">
+      @if (bookingError()) {
+        <div class="booking-error-banner">
+          <img src="/photos/46_Light_book%20appointment%20failed.png" alt="Booking Failed" class="booking-error-img" />
+          <div class="booking-error-text">
+            <strong>Booking Attempt Failed</strong>
+            <p>{{ bookingError() }}</p>
+            <bc-button variant="outline" size="sm" (clicked)="bookingError.set(null)">Dismiss</bc-button>
+          </div>
+        </div>
+      }
+
       <form [formGroup]="bookForm" (ngSubmit)="book()" class="book-form">
         <div class="field">
           <label>Select Doctor</label>
-          <select formControlName="doctorId" (change)="onDoctorSelect($any($event.target).value)">
-            <option value="">Choose a doctor</option>
+          <div class="doctor-grid">
             @for (doc of doctors(); track doc._id) {
-              <option [value]="getDoctorUserId(doc)">
-                {{ getDoctorName(doc) }} — {{ doc.specialty ?? 'General' }}
-              </option>
+              <div 
+                class="doctor-card" 
+                [class.doctor-card--selected]="bookForm.get('doctorId')?.value === getDoctorUserId(doc)"
+                (click)="onDoctorSelect(getDoctorUserId(doc))"
+              >
+                <img [src]="getDoctorAvatar(doc)" class="doctor-card__avatar" alt="Doctor Avatar" />
+                <div class="doctor-card__info">
+                  <h4 class="doctor-card__name">{{ getDoctorName(doc) }}</h4>
+                  <bc-badge [label]="doc.specialty || 'General Orthopedics'" variant="success" />
+                  <span class="doctor-card__exp">{{ doc.yearsOfExperience || 0 }} yrs exp</span>
+                </div>
+              </div>
             }
-          </select>
+          </div>
         </div>
         @if (availability().length > 0) {
           <p class="hint">Doctor availability: @for (slot of availability(); track slot._id) {
@@ -40,7 +59,10 @@
     @if (loading()) {
       <p>Loading...</p>
     } @else if (appointments().length === 0) {
-      <p class="empty">No appointments found.</p>
+      <div class="empty-state">
+        <img src="/photos/50_Light_my%20appointment%20upcoming%20empty.png" alt="No appointments" class="empty-state-img" />
+        <p>No upcoming appointments found.</p>
+      </div>
     } @else {
       <div class="apt-table">
         @for (apt of appointments(); track apt._id) {

@@ -8,7 +8,8 @@ import { ButtonComponent } from '../../../shared/ui/button/button.component';
 interface NavItem {
   label: string;
   path: string;
-  icon: string;
+  icon?: string;
+  image?: string;
   roles: Array<'patient' | 'doctor' | 'admin'>;
 }
 
@@ -29,17 +30,17 @@ export class MainLayoutComponent {
   readonly sidebarOpen = computed(() => true);
 
   readonly navItems: NavItem[] = [
-    { label: 'Dashboard', path: '/patient', icon: '📊', roles: ['patient'] },
-    { label: 'Appointments', path: '/appointments', icon: '📅', roles: ['patient', 'doctor', 'admin'] },
-    { label: 'Medical Files', path: '/medical-files', icon: '📁', roles: ['patient'] },
-    { label: 'AI Reports', path: '/ai', icon: '🧠', roles: ['patient', 'doctor'] },
-    { label: 'Payments', path: '/payments', icon: '💳', roles: ['patient', 'doctor', 'admin'] },
-    { label: 'Notifications', path: '/notifications', icon: '🔔', roles: ['patient', 'doctor', 'admin'] },
-    { label: 'Video Call', path: '/video-consultation', icon: '📹', roles: ['patient', 'doctor'] },
-    { label: 'Dashboard', path: '/doctor', icon: '📊', roles: ['doctor'] },
-    { label: 'Profile', path: '/doctor/profile', icon: '👨‍⚕️', roles: ['doctor'] },
-    { label: 'Availability', path: '/doctor/availability', icon: '🕐', roles: ['doctor'] },
-    { label: 'Admin', path: '/admin', icon: '⚙️', roles: ['admin'] },
+    { label: 'Dashboard', path: '/patient', image: '/images/Dashboard.png', roles: ['patient'] },
+    { label: 'Appointments', path: '/appointments', image: '/images/Calender.png', roles: ['patient', 'doctor', 'admin'] },
+    { label: 'Medical Files', path: '/photos/bone-icon.png', roles: ['patient'] },
+    { label: 'AI Reports', path: '/ai', image: '/photos/stethoscope.png', roles: ['patient', 'doctor'] },
+    { label: 'Payments', path: '/payments', image: '/photos/Card.png', roles: ['patient', 'doctor', 'admin'] },
+    { label: 'Notifications', path: '/notifications', image: '/images/bell-btn.png', roles: ['patient', 'doctor', 'admin'] },
+    { label: 'Video Call', path: '/video-consultation', image: '/images/video-btn.png', roles: ['patient', 'doctor'] },
+    { label: 'Dashboard', path: '/doctor', image: '/images/Dashboard.png', roles: ['doctor'] },
+    { label: 'Profile', path: '/doctor/profile', image: '/images/Patients.png', roles: ['doctor'] },
+    { label: 'Availability', path: '/doctor/availability', image: '/images/Calender.png', roles: ['doctor'] },
+    { label: 'Admin', path: '/admin', image: '/images/Settings.png', roles: ['admin'] },
   ];
 
   readonly visibleNav = computed(() => {
@@ -58,5 +59,25 @@ export class MainLayoutComponent {
   logout(): void {
     this.socket.disconnect();
     this.auth.logout();
+  }
+
+  getUserAvatar(): string {
+    const u = this.user();
+    if (!u) return '/photos/admin.png';
+    if (u.role === 'doctor') {
+      if (u.name?.toLowerCase().includes('sara')) {
+        return '/images/drsara.png';
+      }
+      return '/images/maledr.png';
+    } else if (u.role === 'admin') {
+      return '/photos/admin.png';
+    } else {
+      const charCodeSum = u.name?.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) ?? 0;
+      const index = (charCodeSum % 4) + 1;
+      if (index === 4) {
+        return '/images/maleclient1.png';
+      }
+      return `/images/femaleclient${index}.png`;
+    }
   }
 }

@@ -1,7 +1,7 @@
 <div class="layout">
   <aside class="sidebar" aria-label="Main navigation">
     <div class="sidebar__brand">
-      <span class="sidebar__logo">BC</span>
+      <img src="/images/boniecare logo.png" class="sidebar__logo-img" alt="BoniCare Logo" />
       <div>
         <strong>BoniCare</strong>
         <small>Healthcare Platform</small>
@@ -16,7 +16,11 @@
           [routerLinkActiveOptions]="{ exact: item.path === '/patient' || item.path === '/doctor' || item.path === '/admin' }"
           class="sidebar__link"
         >
-          <span class="sidebar__icon" aria-hidden="true">{{ item.icon }}</span>
+          @if (item.image) {
+            <img [src]="item.image" class="sidebar__link-icon" aria-hidden="true" alt="" />
+          } @else {
+            <span class="sidebar__icon" aria-hidden="true">{{ item.icon }}</span>
+          }
           {{ item.label }}
         </a>
       }
@@ -24,18 +28,25 @@
 
     <div class="sidebar__footer">
       <div class="sidebar__user">
-        <div class="sidebar__avatar">{{ user()?.name?.charAt(0) ?? '?' }}</div>
+        <img [src]="getUserAvatar()" class="sidebar__avatar" alt="User Avatar" />
         <div>
           <div class="sidebar__name">{{ user()?.name }}</div>
           <div class="sidebar__role">{{ user()?.role }}</div>
         </div>
       </div>
+      <button class="sidebar__logout-btn" (click)="logout()">
+        <img src="/images/Logout.png" class="sidebar__logout-icon" alt="Logout" />
+        <span>Sign out</span>
+      </button>
     </div>
   </aside>
 
   <div class="layout__main">
     <header class="header">
-      <h1 class="header__title">Welcome, {{ user()?.name }}</h1>
+      <div class="header__brand">
+        <img src="/images/boniecare small.png" class="header__logo" alt="BoniCare" />
+        <h1 class="header__title">Welcome, {{ user()?.name }}</h1>
+      </div>
       <div class="header__actions">
         <button type="button" class="icon-btn" (click)="toggleTheme()" [attr.aria-label]="themeMode() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
           {{ themeMode() === 'dark' ? '☀️' : '🌙' }}

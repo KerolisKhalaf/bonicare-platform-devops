@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PatientApiService } from '../../../core/services/patient-api.service';
 import { AppointmentApiService } from '../../../core/services/appointment-api.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { CardComponent } from '../../../shared/ui/card/card.component';
 import { BadgeComponent } from '../../../shared/ui/badge/badge.component';
 import { SkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
@@ -27,12 +28,25 @@ import { PatientProfile, MedicalFile, AiReport, Appointment } from '../../../sha
 export class PatientDashboardComponent implements OnInit {
   private readonly patientApi = inject(PatientApiService);
   private readonly appointmentApi = inject(AppointmentApiService);
+  private readonly auth = inject(AuthService);
 
+  readonly user = this.auth.user;
   readonly loading = signal(true);
   readonly patient = signal<PatientProfile | null>(null);
   readonly files = signal<MedicalFile[]>([]);
   readonly aiReports = signal<AiReport[]>([]);
   readonly appointments = signal<Appointment[]>([]);
+
+  getPatientAvatar(): string {
+    const u = this.user();
+    if (!u) return '/images/femaleclient1.png';
+    const charCodeSum = u.name?.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) ?? 0;
+    const index = (charCodeSum % 4) + 1;
+    if (index === 4) {
+      return '/images/maleclient1.png';
+    }
+    return `/images/femaleclient${index}.png`;
+  }
 
   ngOnInit(): void {
     this.patientApi.getDashboard().subscribe({

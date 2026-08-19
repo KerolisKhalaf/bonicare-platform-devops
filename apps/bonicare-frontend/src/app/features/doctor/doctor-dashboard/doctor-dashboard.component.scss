@@ -24,7 +24,46 @@
 }
 
 .profile-summary {
-  p { margin: 0 0 0.5rem; font-size: 0.875rem; }
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  &__avatar {
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--color-border);
+  }
+
+  &__details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    strong {
+      font-size: 1.125rem;
+      color: var(--color-text);
+    }
+  }
+
+  &__email {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+  }
+
+  &__fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    p { margin: 0; font-size: 0.875rem; color: var(--color-text); }
+  }
 }
 
 .apt-list { display: flex; flex-direction: column; gap: 0.75rem; }
