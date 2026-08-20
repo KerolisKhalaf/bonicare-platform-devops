@@ -10,7 +10,6 @@ variable "VERSION" {
   default = "latest"
 }
 
-# مجموعة الاستهدافات للخدمات
 group "default" {
   targets = [
     "backend",
@@ -19,7 +18,7 @@ group "default" {
     "webrtc"
   ]
 }
-# الإعدادات العامة المشتركة (DRY Principle)
+
 target "_common" {
 
   platforms = [
@@ -30,19 +29,10 @@ target "_common" {
     "type=registry"
   ]
 
-  cache-from = [
-    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-buildcache"
-  ]
-
-  cache-to = [
-    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-buildcache,mode=max"
-  ]
-
   labels = {
     project = "BoniCare"
     team    = "DevOps"
   }
-
 }
 
 target "backend" {
@@ -54,10 +44,16 @@ target "backend" {
   dockerfile = "Dockerfile"
 
   tags = [
-    "${REGISTRY}/${NAMESPACE}/bonicare-backend:${VERSION}",
-    "${REGISTRY}/${NAMESPACE}/bonicare-backend:latest"
+    "${REGISTRY}/${NAMESPACE}/bonicare-backend:${VERSION}"
   ]
 
+  cache-from = [
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-backend-cache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-backend-cache,mode=max"
+  ]
 }
 
 target "frontend" {
@@ -69,10 +65,16 @@ target "frontend" {
   dockerfile = "Dockerfile"
 
   tags = [
-    "${REGISTRY}/${NAMESPACE}/bonicare-frontend:${VERSION}",
-    "${REGISTRY}/${NAMESPACE}/bonicare-frontend:latest"
+    "${REGISTRY}/${NAMESPACE}/bonicare-frontend:${VERSION}"
   ]
 
+  cache-from = [
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-frontend-cache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-frontend-cache,mode=max"
+  ]
 }
 
 target "ai-service" {
@@ -84,10 +86,16 @@ target "ai-service" {
   dockerfile = "Dockerfile"
 
   tags = [
-    "${REGISTRY}/${NAMESPACE}/bonicare-ai-service:${VERSION}",
-    "${REGISTRY}/${NAMESPACE}/bonicare-ai-service:latest"
+    "${REGISTRY}/${NAMESPACE}/bonicare-ai-service:${VERSION}"
   ]
 
+  cache-from = [
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-ai-service-cache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-ai-service-cache,mode=max"
+  ]
 }
 
 target "webrtc" {
@@ -99,8 +107,14 @@ target "webrtc" {
   dockerfile = "Dockerfile"
 
   tags = [
-    "${REGISTRY}/${NAMESPACE}/bonicare-webrtc:${VERSION}",
-    "${REGISTRY}/${NAMESPACE}/bonicare-webrtc:latest"
+    "${REGISTRY}/${NAMESPACE}/bonicare-webrtc:${VERSION}"
   ]
 
+  cache-from = [
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-webrtc-cache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-webrtc-cache,mode=max"
+  ]
 }

@@ -6,6 +6,7 @@ pipeline {
         timestamps()
         ansiColor('xterm')
         disableConcurrentBuilds()
+
         buildDiscarder(logRotator(
             numToKeepStr: '20',
             artifactNumToKeepStr: '10'
@@ -13,40 +14,45 @@ pipeline {
     }
 
     environment {
+
         DOCKER_BUILDKIT = "1"
         COMPOSE_DOCKER_CLI_BUILD = "1"
 
         REGISTRY = "docker.io"
         NAMESPACE = "keroliskhalaf1"
-
-        IMAGE_TAG = "${BUILD_NUMBER}"
     }
 
     stages {
 
         stage('Checkout Repository') {
             steps {
+
                 cleanWs()
 
                 git(
                     branch: 'main',
-                    url: 'https://github.com/Antonios-Reda/Team2.git'
+                    url: 'https://github.com/KerolisKhalaf/bonicare-platform-devops.git'
                 )
 
                 script {
+
                     env.GIT_SHA = sh(
-                        script: 'git rev-parse --short HEAD',
+                        script: 'git rev-parse --short=12 HEAD',
                         returnStdout: true
                     ).trim()
+
+                    env.IMAGE_TAG = env.GIT_SHA
                 }
 
                 echo "Building Branch: main"
                 echo "Commit: ${env.GIT_SHA}"
+                echo "Image Tag: ${env.IMAGE_TAG}"
             }
         }
 
         stage('Docker Information') {
             steps {
+
                 sh '''
                     docker version
                     docker buildx version
@@ -57,6 +63,7 @@ pipeline {
 
         stage('Docker Login') {
             steps {
+
                 withCredentials([
                     usernamePassword(
                         credentialsId: 'dockerhub_id',
@@ -70,7 +77,6 @@ pipeline {
                             -u "$DOCKER_USER" \
                             --password-stdin
                     '''
-
                 }
             }
         }
@@ -88,17 +94,18 @@ pipeline {
 
                     docker buildx inspect --bootstrap
                 '''
-
             }
         }
 
         stage('Build & Push Images') {
             steps {
+
                 withEnv([
                     "VERSION=${IMAGE_TAG}",
                     "REGISTRY=${REGISTRY}",
                     "NAMESPACE=${NAMESPACE}"
                 ]) {
+
                     sh '''
                         docker buildx bake \
                             --push \
@@ -107,47 +114,17 @@ pipeline {
                 }
             }
         }
-
-        stage('Deploy to Production') {
-            steps {
-
-                sh """
-                    ansible-playbook \
-                        -i infra/ansible/inventory/prod.ini \
-                        infra/ansible/deploy.yml \
-                        -e image_tag=${IMAGE_TAG} \
-                        --vault-password-file=.vault_pass
-                """
-
-            }
-        }
-
     }
 
     post {
 
         success {
-            echo 'Pipeline Finished Successfully'
+            echo 'CI Pipeline Finished Successfully'
+            echo "Images pushed with tag: ${IMAGE_TAG}"
         }
 
         failure {
-
-            echo 'Deployment Failed'
-
-            script {
-
-                if (fileExists('infra/ansible/rollback_logic.yml')) {
-
-                    sh '''
-                        ansible-playbook \
-                            -i infra/ansible/inventory/prod.ini \
-                            infra/ansible/rollback_logic.yml || true
-                    '''
-
-                }
-
-            }
-
+            echo 'CI Pipeline Failed'
         }
 
         always {
@@ -155,9 +132,6 @@ pipeline {
             sh 'docker logout || true'
 
             cleanWs()
-
         }
-
     }
-
 }
