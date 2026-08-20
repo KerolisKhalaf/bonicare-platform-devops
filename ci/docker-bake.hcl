@@ -40,7 +40,6 @@ target "backend" {
   inherits = ["_common"]
 
   context = "./apps/bonicare-backend"
-
   dockerfile = "Dockerfile"
 
   tags = [
@@ -61,7 +60,6 @@ target "frontend" {
   inherits = ["_common"]
 
   context = "./apps/bonicare-frontend"
-
   dockerfile = "Dockerfile"
 
   tags = [
@@ -82,7 +80,6 @@ target "ai-service" {
   inherits = ["_common"]
 
   context = "./apps/ai-service"
-
   dockerfile = "Dockerfile"
 
   tags = [
@@ -90,9 +87,6 @@ target "ai-service" {
   ]
 
   cache-from = [
-    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-ai-service-cache"
-  ]
-  cache-from[
     "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-ai-service-cache"
   ]
 
@@ -106,7 +100,6 @@ target "webrtc" {
   inherits = ["_common"]
 
   context = "./apps/webrtc"
-
   dockerfile = "Dockerfile"
 
   tags = [
@@ -121,5 +114,3 @@ target "webrtc" {
     "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-webrtc-cache,mode=min"
   ]
 }
-
-
