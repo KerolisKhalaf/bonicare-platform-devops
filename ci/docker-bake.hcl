@@ -29,6 +29,14 @@ target "_common" {
     "type=registry"
   ]
 
+  cache-from = [
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-buildcache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-buildcache,mode=max"
+  ]
+
   labels = {
     project = "BoniCare"
     team    = "DevOps"
