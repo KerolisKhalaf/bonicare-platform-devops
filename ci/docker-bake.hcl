@@ -52,7 +52,7 @@ target "backend" {
   ]
 
   cache-to = [
-    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-backend-cache,mode=max"
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-backend-cache,mode=min"
   ]
 }
 
@@ -73,7 +73,7 @@ target "frontend" {
   ]
 
   cache-to = [
-    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-frontend-cache,mode=max"
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-frontend-cache,mode=min"
   ]
 }
 
@@ -92,9 +92,12 @@ target "ai-service" {
   cache-from = [
     "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-ai-service-cache"
   ]
+  cache-from[
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-ai-service-cache"
+  ]
 
   cache-to = [
-    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-ai-service-cache,mode=max"
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-ai-service-cache,mode=min"
   ]
 }
 
@@ -115,6 +118,8 @@ target "webrtc" {
   ]
 
   cache-to = [
-    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-webrtc-cache,mode=max"
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-webrtc-cache,mode=min"
   ]
 }
+
+

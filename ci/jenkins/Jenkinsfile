@@ -19,7 +19,10 @@ pipeline {
         COMPOSE_DOCKER_CLI_BUILD = "1"
 
         REGISTRY = "docker.io"
-        NAMESPACE = "keroliskhalaf1"
+        NAMESPACE = "keroliskhalaf"
+
+        // Branch currently being tested
+        BRANCH_NAME = "feature/jenkins-pipeline"
     }
 
     stages {
@@ -30,7 +33,7 @@ pipeline {
                 cleanWs()
 
                 git(
-                    branch: 'main',
+                    branch: "${BRANCH_NAME}",
                     url: 'https://github.com/KerolisKhalaf/bonicare-platform-devops.git'
                 )
 
@@ -44,9 +47,11 @@ pipeline {
                     env.IMAGE_TAG = env.GIT_SHA
                 }
 
-                echo "Building Branch: main"
+                echo "========================================"
+                echo "Branch: ${env.BRANCH_NAME}"
                 echo "Commit: ${env.GIT_SHA}"
                 echo "Image Tag: ${env.IMAGE_TAG}"
+                echo "========================================"
             }
         }
 
@@ -54,8 +59,15 @@ pipeline {
             steps {
 
                 sh '''
+                    set -e
+
+                    echo "Docker version:"
                     docker version
+
+                    echo "Docker Buildx version:"
                     docker buildx version
+
+                    echo "Docker info:"
                     docker info
                 '''
             }
@@ -73,8 +85,10 @@ pipeline {
                 ]) {
 
                     sh '''
+                        set -e
+
                         echo "$DOCKER_PASS" | docker login \
-                            -u "$DOCKER_USER" \
+                            --username "$DOCKER_USER" \
                             --password-stdin
                     '''
                 }
@@ -85,13 +99,21 @@ pipeline {
             steps {
 
                 sh '''
-                    docker buildx inspect bonicare-builder >/dev/null 2>&1 || \
-                    docker buildx create \
-                        --name bonicare-builder \
-                        --driver docker-container
+                    set -e
+
+                    if docker buildx inspect bonicare-builder >/dev/null 2>&1; then
+                        echo "Buildx builder already exists"
+                    else
+                        echo "Creating Buildx builder..."
+
+                        docker buildx create \
+                            --name bonicare-builder \
+                            --driver docker-container
+                    fi
 
                     docker buildx use bonicare-builder
 
+                    echo "Bootstrapping Buildx builder..."
                     docker buildx inspect --bootstrap
                 '''
             }
@@ -107,6 +129,15 @@ pipeline {
                 ]) {
 
                     sh '''
+                        set -e
+
+                        echo "========================================"
+                        echo "Building and pushing Docker images"
+                        echo "Registry : ${REGISTRY}"
+                        echo "Namespace: ${NAMESPACE}"
+                        echo "Version  : ${VERSION}"
+                        echo "========================================"
+
                         docker buildx bake \
                             --push \
                             --file ci/docker-bake.hcl
@@ -119,12 +150,18 @@ pipeline {
     post {
 
         success {
-            echo 'CI Pipeline Finished Successfully'
+            echo "========================================"
+            echo "CI Pipeline Finished Successfully"
+            echo "Branch: ${BRANCH_NAME}"
             echo "Images pushed with tag: ${IMAGE_TAG}"
+            echo "========================================"
         }
 
         failure {
-            echo 'CI Pipeline Failed'
+            echo "========================================"
+            echo "CI Pipeline Failed"
+            echo "Branch: ${BRANCH_NAME}"
+            echo "========================================"
         }
 
         always {
