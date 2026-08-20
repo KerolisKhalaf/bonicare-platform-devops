@@ -19,7 +19,10 @@ pipeline {
         COMPOSE_DOCKER_CLI_BUILD = "1"
 
         REGISTRY = "docker.io"
-        NAMESPACE = "keroliskhalaf1"
+        NAMESPACE = "keroliskhalaf"
+
+        // Branch currently being tested
+        BRANCH_NAME = "feature/jenkins-pipeline"
     }
 
     stages {
@@ -44,6 +47,7 @@ pipeline {
                 echo "Building Branch: ${env.BRANCH_NAME ?: 'detached'}"
                 echo "Commit: ${env.GIT_SHA}"
                 echo "Image Tag: ${env.IMAGE_TAG}"
+                echo "========================================"
             }
         }
 
@@ -51,8 +55,15 @@ pipeline {
             steps {
 
                 sh '''
+                    set -e
+
+                    echo "Docker version:"
                     docker version
+
+                    echo "Docker Buildx version:"
                     docker buildx version
+
+                    echo "Docker info:"
                     docker info
                 '''
             }
@@ -113,8 +124,10 @@ pipeline {
                 ]) {
 
                     sh '''
+                        set -e
+
                         echo "$DOCKER_PASS" | docker login \
-                            -u "$DOCKER_USER" \
+                            --username "$DOCKER_USER" \
                             --password-stdin
                     '''
                 }
@@ -131,6 +144,15 @@ pipeline {
                 ]) {
 
                     sh '''
+                        set -e
+
+                        echo "========================================"
+                        echo "Building and pushing Docker images"
+                        echo "Registry : ${REGISTRY}"
+                        echo "Namespace: ${NAMESPACE}"
+                        echo "Version  : ${VERSION}"
+                        echo "========================================"
+
                         docker buildx bake \
                             --push \
                             --file ci/docker-bake.hcl
@@ -143,12 +165,18 @@ pipeline {
     post {
 
         success {
-            echo 'CI Pipeline Finished Successfully'
+            echo "========================================"
+            echo "CI Pipeline Finished Successfully"
+            echo "Branch: ${BRANCH_NAME}"
             echo "Images pushed with tag: ${IMAGE_TAG}"
+            echo "========================================"
         }
 
         failure {
-            echo 'CI Pipeline Failed'
+            echo "========================================"
+            echo "CI Pipeline Failed"
+            echo "Branch: ${BRANCH_NAME}"
+            echo "========================================"
         }
 
         always {
