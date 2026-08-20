@@ -19,7 +19,7 @@ pipeline {
         COMPOSE_DOCKER_CLI_BUILD = "1"
 
         REGISTRY = "docker.io"
-        NAMESPACE = "keroliskhalaf"
+        NAMESPACE = "keroliskhalaf1"
 
         // Branch currently being tested
         BRANCH_NAME = "feature/jenkins-pipeline"
