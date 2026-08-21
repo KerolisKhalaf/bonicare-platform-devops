@@ -14,10 +14,11 @@ spec:
         app: ai
     spec:
       containers:
-      - name: ai
-        image: YOUR_FASTAPI_IMAGE:latest
-        ports:
-        - containerPort: 8000
+        - name: ai
+          image: keroliskhalaf1/bonicare-ai-service:<COMMIT_SHA>
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
 ---
 apiVersion: v1
 kind: Service
@@ -28,6 +29,6 @@ spec:
   selector:
     app: ai
   ports:
-  - port: 8000
-    targetPort: 8000
+    - port: 8000
+      targetPort: 8000
   type: ClusterIP
