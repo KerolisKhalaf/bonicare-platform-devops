@@ -1,6 +1,6 @@
 # BoniCare Orthopedic Platform - Project Analysis & Roadmap
 
-## 📋 CURRENT PROJECT SUMMARY (Updated: 2026-04-06)
+## 📋 CURRENT PROJECT SUMMARY (Updated: 2026-09-17)
 
 ### Tech Stack
 - **Runtime**: Node.js (ES6 modules)
@@ -55,42 +55,48 @@ GET    /api/v1/appointment/my-appointments
 ## 🔴 REMAINING ISSUES & GAPS
 
 ### 1. **File Storage Mismatch**
-- **Status**: ⚠️ PARTIAL
-- Current: Files are saved to the filesystem via Multer.
-- Missing: Metadata (originalname, path, mimetype, etc.) is NOT yet saved to the `MedicalFile` MongoDB collection.
-- Required: Update `filesController.js` to store metadata in MongoDB.
+- **Status**: ✅ FIXED
+- Files are saved to the local `uploads/` directory via Multer.
+- File metadata is saved to the `MedicalFile` MongoDB collection.
+- Patient-scoped listing and deletion are implemented.
 
-### 2. **AI Integration Missing**
-- **Status**: ⚠️ PENDING
-- `AiReport` model exists, but no controllers or routes are currently implemented for AI analysis.
-- Needs: Integration with Jupyter-based models or stubs.
+### 2. **AI Integration**
+- **Status**: ⚠️ PARTIAL
+- AI controllers, routes, and the Python AI service exist.
+- Remaining work: harden authorization, verify end-to-end report persistence, and improve unavailable-service handling.
 
 ### 3. **Incomplete Role-Based Protection**
 - While `protect` middleware supports roles, some routes might still need stricter validation (e.g., ensuring a patient can only see their own files/appointments).
+
+### 4. **Patient Profile Management**
+- **Status**: ✅ IMPLEMENTED
+- Added authenticated `GET /api/v1/patient/profile` and `PUT /api/v1/patient/profile` endpoints.
+- Profile updates synchronize User fields (name and phone) with Patient fields (date of birth, gender, and medical history).
+- Added an editable profile form to the patient dashboard.
 
 ---
 
 ## 🎯 REQUIREMENTS ANALYSIS FOR MVP
 
-### Phase 1: Core Infrastructure (90% Complete)
+### Phase 1: Core Infrastructure (Complete)
 1. ✅ Fix auth middleware bug
 2. ✅ Implement API v1 versioning
 3. ✅ Create missing models: Appointment, Doctor, DoctorAvailability
 4. ✅ Create core validators for all endpoints
-5. ⚠️ Fix file upload to save metadata to MongoDB
+5. ✅ Fix file upload to save metadata to MongoDB
 
-### Phase 2: Appointment & Doctor System (90% Complete)
+### Phase 2: Appointment & Doctor System (95% Complete)
 1. ✅ Doctor Profile (extends User via ref)
 2. ✅ Doctor Availability management
 3. ✅ Appointment booking & overlap detection
 4. ✅ Stripe Payment Integration (Feature 009)
-5. ⚠️ Patient profile management (CRUD)
+5. ✅ Patient profile management (read/update)
 6. ⚠️ Advanced appointment filtering (by date range, doctor, etc.)
 
-### Phase 3: Integrate AI Models (Starting)
-1. ⚠️ Create `src/services/aiAnalysisService.js` stub
-2. ⚠️ Define AI result JSON schema
-3. ⚠️ Implement `/api/v1/ai/analyze` route
+### Phase 3: Integrate AI Models (In Progress)
+1. ✅ AI service and backend AI routes exist
+2. ⚠️ Harden AI authorization and validate the result contract
+3. ⚠️ Verify end-to-end analysis and report persistence
 
 ---
 
@@ -104,8 +110,8 @@ GET    /api/v1/appointment/my-appointments
 
 ### 👤 Patient Endpoints
 - `GET    /api/v1/patient/dashboard`    - ✅ Done
-- `GET    /api/v1/patient/profile`      - ❌ Planned
-- `PUT    /api/v1/patient/profile`      - ❌ Planned
+- `GET    /api/v1/patient/profile`      - ✅ Done
+- `PUT    /api/v1/patient/profile`      - ✅ Done
 
 ### 👨‍⚕️ Doctor Endpoints
 - `GET    /api/v1/doctor/profile`       - ✅ Done
@@ -127,18 +133,18 @@ GET    /api/v1/appointment/my-appointments
 - `POST   /api/v1/payment/refund`        - ✅ Done (Partial/Full)
 
 ### 📁 File Management Endpoints
-- `POST   /api/v1/files/upload`         - ⚠️ Done (fs only, needs MongoDB)
-- `GET    /api/v1/files`                - ❌ Planned (with metadata)
-- `DELETE /api/v1/files/:id`            - ❌ Planned (DB cleanup)
+- `POST   /api/v1/files/upload`         - ✅ Done (filesystem + MongoDB metadata)
+- `GET    /api/v1/files`                - ✅ Done (patient-scoped metadata)
+- `DELETE /api/v1/files/:filename`      - ✅ Done (patient-scoped file and metadata cleanup)
 
 ---
 
 ## 📊 NEXT STEPS (ACTION ITEMS)
 
 ### Immediate Priority 🔴
-1. **Save File Metadata**: Update `uploadMedicalFile` in `filesController.js` to create a `MedicalFile` document in MongoDB.
-2. **Patient Profile**: Implement GET/PUT `/api/v1/patient/profile`.
-3. **AI Stubs**: Create a basic AI analysis service and endpoint to return mock results.
+1. **Verify the backend test baseline**: Run the full Jest suite and resolve failures or incomplete integration setup.
+2. **Harden AI authorization**: Ensure only authorized patients and doctors can access analysis and reports.
+3. **Complete patient profile coverage**: Add focused API and frontend tests for profile read/update validation.
 
 ### High Priority 🟠
 4. **Enhanced Authorization**: Ensure users can only access their own data (Files/Appointments).

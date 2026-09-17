@@ -1,5 +1,3 @@
-version: '3.9'
-
 # ==========================
 # BoniCare Orthopedic Platform
 # Complete Docker Compose Stack
@@ -62,7 +60,7 @@ services:
     
     # Port mapping for API
     ports:
-      - "3000:3000"
+      - "3001:3000"
     
     # Service restart policy (default: no restart)
     restart: no

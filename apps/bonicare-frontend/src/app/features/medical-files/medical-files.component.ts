@@ -59,7 +59,8 @@ export class MedicalFilesComponent implements OnInit {
     this.uploading.set(true);
     this.uploadProgress.set(0);
 
-    this.fileApi.upload(file).subscribe({
+    const modality = file.type === 'application/pdf' ? 'PDF' : 'X-ray';
+    this.fileApi.upload(file, modality, 'Unknown').subscribe({
       next: (event) => {
         if (event.type === HttpEventType.UploadProgress && event.total) {
           this.uploadProgress.set(Math.round((event.loaded / event.total) * 100));
@@ -78,7 +79,21 @@ export class MedicalFilesComponent implements OnInit {
     });
   }
 
+  deleteFile(file: MedicalFile): void {
+    const filename = file.filename;
+    if (!filename) return;
+
+    this.fileApi.delete(filename).subscribe({
+      next: () => {
+        this.toast.success('File deleted successfully');
+        this.loadFiles();
+      },
+      error: () => this.toast.error('Could not delete file'),
+    });
+  }
+
   getFileName(file: MedicalFile): string {
     return file.originalName ?? file.originalname ?? file.filename ?? 'Unknown';
   }
+
 }

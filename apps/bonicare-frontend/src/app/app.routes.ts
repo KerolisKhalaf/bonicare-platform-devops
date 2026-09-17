@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   {
@@ -17,7 +18,22 @@ export const routes: Routes = [
       { path: '', redirectTo: 'patient', pathMatch: 'full' },
       {
         path: 'patient',
-        loadChildren: () => import('./features/patient/patient.routes').then((m) => m.PATIENT_ROUTES),
+        children: [
+          {
+            path: 'medical-files',
+            canActivate: [roleGuard('patient')],
+            loadComponent: () =>
+              import('./features/medical-files/medical-files.component').then((m) => m.MedicalFilesComponent),
+          },
+          {
+            path: '',
+            canActivate: [roleGuard('patient')],
+            loadComponent: () =>
+              import('./features/patient/patient-dashboard/patient-dashboard.component').then(
+                (m) => m.PatientDashboardComponent
+              ),
+          },
+        ],
       },
       {
         path: 'doctor',
@@ -34,8 +50,9 @@ export const routes: Routes = [
       },
       {
         path: 'medical-files',
-        loadChildren: () =>
-          import('./features/medical-files/medical-files.routes').then((m) => m.MEDICAL_FILES_ROUTES),
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/medical-files/medical-files.component').then((m) => m.MedicalFilesComponent),
       },
       {
         path: 'ai',
