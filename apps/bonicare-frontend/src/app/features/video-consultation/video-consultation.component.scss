@@ -84,14 +84,46 @@
   max-height: 200px;
   overflow-y: auto;
   margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .chat-msg {
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  max-width: min(80%, 32rem);
   padding: 0.5rem 0.75rem;
-  background: var(--color-bg);
   border-radius: var(--radius-md);
   margin-bottom: 0.5rem;
   font-size: 0.875rem;
+
+  &--own {
+    align-self: flex-end;
+    background: var(--color-primary);
+    color: #fff;
+    border-bottom-right-radius: 0.25rem;
+  }
+
+  &--other {
+    align-self: flex-start;
+    background: var(--color-bg);
+    color: var(--color-text);
+    border-bottom-left-radius: 0.25rem;
+  }
+
+  &__sender {
+    margin-bottom: 0.2rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    opacity: 0.75;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  &__content {
+    overflow-wrap: anywhere;
+  }
 }
 
 .chat-input {

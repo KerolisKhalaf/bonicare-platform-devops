@@ -17,17 +17,21 @@ export class WebRtcService implements OnDestroy {
 
   private peerConnection: RTCPeerConnection | null = null;
   private appointmentId: string | null = null;
+  private isInitiator = false;
+  private peerCount = 0;
+  private listenersRegistered = false;
+  private remoteDescriptionSet = false;
+  private pendingIceCandidates: RTCIceCandidateInit[] = [];
 
   private readonly iceServers: RTCIceServer[] = [
     { urls: 'stun:stun.l.google.com:19302' },
   ];
 
-  async startCall(appointmentId: string): Promise<void> {
-    if (!this.signalingAvailable()) {
-      this.callState.set('failed');
-      return;
-    }
+  constructor() {
+    this.setupSignalingListeners();
+  }
 
+  async startCall(appointmentId: string): Promise<void> {
     this.appointmentId = appointmentId;
     this.callState.set('connecting');
 
@@ -37,15 +41,23 @@ export class WebRtcService implements OnDestroy {
       this.createPeerConnection();
       stream.getTracks().forEach((track) => this.peerConnection!.addTrack(track, stream));
 
-      this.socket.emitCallEvent('call:join', { appointmentId });
-      this.setupSignalingListeners();
-
-      const offer = await this.peerConnection!.createOffer();
-      await this.peerConnection!.setLocalDescription(offer);
-      this.socket.emitCallEvent('call:offer', { appointmentId, sdp: offer });
+      this.joinCall(appointmentId);
+      this.createOfferIfReady();
     } catch {
       this.callState.set('failed');
     }
+  }
+
+  joinCall(appointmentId: string): void {
+    if (this.appointmentId === appointmentId && this.peerCount > 0) return;
+
+    if (this.appointmentId && this.appointmentId !== appointmentId) {
+      this.socket.emitCallEvent('call:leave', { appointmentId: this.appointmentId });
+      this.cleanup();
+    }
+
+    this.appointmentId = appointmentId;
+    this.socket.emitCallEvent('call:join', { appointmentId });
   }
 
   async toggleAudio(): Promise<void> {
@@ -90,7 +102,7 @@ export class WebRtcService implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.cleanup();
+    this.endCall();
   }
 
   private createPeerConnection(): void {
@@ -120,15 +132,100 @@ export class WebRtcService implements OnDestroy {
   }
 
   private setupSignalingListeners(): void {
+    if (this.listenersRegistered) return;
+    this.listenersRegistered = true;
+
+    this.socket.onCallEvent('call:joined', async (data: unknown) => {
+      const { appointmentId, initiator, peerCount } = data as {
+        appointmentId: string;
+        initiator: boolean;
+        peerCount: number;
+      };
+      if (this.appointmentId !== appointmentId) return;
+      this.isInitiator = initiator;
+      this.peerCount = peerCount;
+      this.createOfferIfReady();
+    });
+
+    this.socket.onCallEvent('call:peer-joined', async (data: unknown) => {
+      const { appointmentId, peerCount } = data as { appointmentId: string; peerCount: number };
+      this.peerCount = peerCount;
+      if (!this.isInitiator || this.appointmentId !== appointmentId || !this.peerConnection) return;
+
+      await this.createOfferIfReady();
+    });
+
+    this.socket.onCallEvent('call:peer-left', (data: unknown) => {
+      const { appointmentId } = data as { appointmentId: string };
+      if (this.appointmentId !== appointmentId) return;
+      this.peerCount = 1;
+      this.remoteStream.set(null);
+      if (this.callState() === 'connected') this.callState.set('reconnecting');
+    });
+
+    this.socket.onCallEvent('call:offer', async (data: unknown) => {
+      const { appointmentId, sdp } = data as { appointmentId: string; sdp: RTCSessionDescriptionInit };
+      if (this.appointmentId && this.appointmentId !== appointmentId) return;
+
+      if (!this.appointmentId) {
+        this.appointmentId = appointmentId;
+      }
+
+      if (!this.peerConnection) {
+        this.callState.set('connecting');
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        this.localStream.set(stream);
+        this.createPeerConnection();
+        stream.getTracks().forEach((track) => this.peerConnection!.addTrack(track, stream));
+      }
+
+      const peerConnection = this.peerConnection;
+      if (!peerConnection) return;
+
+      await peerConnection.setRemoteDescription(sdp);
+      this.remoteDescriptionSet = true;
+      await this.flushPendingIceCandidates(peerConnection);
+      const answer = await peerConnection.createAnswer();
+      if (this.appointmentId) {
+        await peerConnection.setLocalDescription(answer);
+        this.socket.emitCallEvent('call:answer', { appointmentId, sdp: answer });
+      }
+    });
+
     this.socket.onCallEvent('call:answer', async (data: unknown) => {
       const { sdp } = data as { sdp: RTCSessionDescriptionInit };
-      await this.peerConnection?.setRemoteDescription(sdp);
+      const peerConnection = this.peerConnection;
+      if (!peerConnection) return;
+      await peerConnection.setRemoteDescription(sdp);
+      this.remoteDescriptionSet = true;
+      await this.flushPendingIceCandidates(peerConnection);
     });
 
     this.socket.onCallEvent('call:ice-candidate', async (data: unknown) => {
       const { candidate } = data as { candidate: RTCIceCandidateInit };
-      await this.peerConnection?.addIceCandidate(candidate);
+      const peerConnection = this.peerConnection;
+      if (!peerConnection || !this.remoteDescriptionSet) {
+        this.pendingIceCandidates.push(candidate);
+        return;
+      }
+      await peerConnection.addIceCandidate(candidate);
     });
+  }
+
+  private async flushPendingIceCandidates(peerConnection: RTCPeerConnection): Promise<void> {
+    const candidates = this.pendingIceCandidates;
+    this.pendingIceCandidates = [];
+    for (const candidate of candidates) {
+      await peerConnection.addIceCandidate(candidate);
+    }
+  }
+
+  private async createOfferIfReady(): Promise<void> {
+    if (!this.isInitiator || this.peerCount < 2 || !this.peerConnection || !this.appointmentId) return;
+
+    const offer = await this.peerConnection.createOffer();
+    await this.peerConnection.setLocalDescription(offer);
+    this.socket.emitCallEvent('call:offer', { appointmentId: this.appointmentId, sdp: offer });
   }
 
   private stopScreenShare(): void {
@@ -139,6 +236,10 @@ export class WebRtcService implements OnDestroy {
     this.localStream()?.getTracks().forEach((t) => t.stop());
     this.peerConnection?.close();
     this.peerConnection = null;
+    this.isInitiator = false;
+    this.peerCount = 0;
+    this.remoteDescriptionSet = false;
+    this.pendingIceCandidates = [];
     this.localStream.set(null);
     this.remoteStream.set(null);
     this.appointmentId = null;

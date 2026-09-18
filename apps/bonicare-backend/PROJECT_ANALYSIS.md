@@ -8,6 +8,7 @@
 - **Database**: MongoDB with Mongoose v8.19.1
 - **Authentication**: JWT + Bcrypt
 - **File Management**: Multer v2.0.2
+- **Real-time Communication**: Socket.IO chat plus standalone WebRTC signaling service
 - **Security**: Helmet, CORS, Morgan logging
 - **Validation**: express-validator
 
@@ -32,6 +33,8 @@ GET    /api/v1/doctor/profile
 POST   /api/v1/doctor/availability
 POST   /api/v1/appointment/book
 GET    /api/v1/appointment/my-appointments
+GET    /api/v1/patient/profile
+PUT    /api/v1/patient/profile
 ```
 
 ---
@@ -74,6 +77,14 @@ GET    /api/v1/appointment/my-appointments
 - Profile updates synchronize User fields (name and phone) with Patient fields (date of birth, gender, and medical history).
 - Added an editable profile form to the patient dashboard.
 
+### 5. **Video Consultation and Chat**
+- **Status**: ✅ Implemented for native development
+- WebRTC signaling runs as a separate Socket.IO service on port 5002.
+- Appointment IDs are used as signaling rooms and chat conversation rooms.
+- Offer/answer, ICE candidate relay, peer join/leave, reconnect handling, and media cleanup are implemented.
+- In-call text chat is persisted through the backend and delivered to both appointment participants.
+- Remaining production work: TURN configuration, server-side appointment authorization for signaling, and end-to-end browser testing.
+
 ---
 
 ## 🎯 REQUIREMENTS ANALYSIS FOR MVP
@@ -85,15 +96,16 @@ GET    /api/v1/appointment/my-appointments
 4. ✅ Create core validators for all endpoints
 5. ✅ Fix file upload to save metadata to MongoDB
 
-### Phase 2: Appointment & Doctor System (95% Complete)
+### Phase 2: Appointment, Doctor & Communication (Complete for MVP)
 1. ✅ Doctor Profile (extends User via ref)
 2. ✅ Doctor Availability management
 3. ✅ Appointment booking & overlap detection
 4. ✅ Stripe Payment Integration (Feature 009)
 5. ✅ Patient profile management (read/update)
 6. ⚠️ Advanced appointment filtering (by date range, doctor, etc.)
+7. ✅ Appointment-room WebRTC signaling and in-call chat
 
-### Phase 3: Integrate AI Models (In Progress)
+### Phase 3: Integrate AI Models and Production Hardening (In Progress)
 1. ✅ AI service and backend AI routes exist
 2. ⚠️ Harden AI authorization and validate the result contract
 3. ⚠️ Verify end-to-end analysis and report persistence
@@ -137,6 +149,11 @@ GET    /api/v1/appointment/my-appointments
 - `GET    /api/v1/files`                - ✅ Done (patient-scoped metadata)
 - `DELETE /api/v1/files/:filename`      - ✅ Done (patient-scoped file and metadata cleanup)
 
+### 📞 Video Consultation and Chat
+- WebRTC signaling service                 - ✅ Done (native development flow)
+- Appointment-room text chat               - ✅ Done (persisted and broadcast)
+- TURN server / production NAT traversal   - ⚠️ Pending
+
 ---
 
 ## 📊 NEXT STEPS (ACTION ITEMS)
@@ -144,7 +161,7 @@ GET    /api/v1/appointment/my-appointments
 ### Immediate Priority 🔴
 1. **Verify the backend test baseline**: Run the full Jest suite and resolve failures or incomplete integration setup.
 2. **Harden AI authorization**: Ensure only authorized patients and doctors can access analysis and reports.
-3. **Complete patient profile coverage**: Add focused API and frontend tests for profile read/update validation.
+3. **Complete communication coverage**: Add focused browser tests for two-party WebRTC and chat flows.
 
 ### High Priority 🟠
 4. **Enhanced Authorization**: Ensure users can only access their own data (Files/Appointments).
@@ -152,7 +169,7 @@ GET    /api/v1/appointment/my-appointments
 6. **Error Handling**: Standardize error responses across all controllers.
 
 ### Integration 🟡
-7. **Jupyter Connectivity**: Start implementing the bridge between Node.js and the Python-based AI models.
+7. **Jupyter Connectivity**: Continue implementing the bridge between Node.js and the Python-based AI models.
 8. **Notifications**: (Optional) Basic email or in-app notification when an appointment is booked/cancelled.
 
 ---

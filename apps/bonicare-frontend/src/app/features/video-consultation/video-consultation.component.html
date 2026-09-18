@@ -3,18 +3,15 @@
 
   @if (!webrtc.signalingAvailable()) {
     <div class="alert alert--warning">
-      <strong>WebRTC signaling not available.</strong>
-      The backend Socket.IO server does not yet implement WebRTC signaling events
-      (<code>call:offer</code>, <code>call:answer</code>, <code>call:ice-candidate</code>).
-      See <code>docs/BACKEND_REVIEW_REPORT.md</code> for required backend changes.
-      In-call chat via existing Socket.IO events may still work.
+      <strong>WebRTC signaling is unavailable.</strong>
+      Start the WebRTC signaling service on port 5002 before starting a consultation.
     </div>
   }
 
   <div class="video-page__layout">
     <bc-card title="Start Consultation">
       <form [formGroup]="appointmentForm" class="start-form">
-        <select formControlName="appointmentId">
+        <select formControlName="appointmentId" (change)="onAppointmentSelected()">
           <option value="">Select scheduled appointment</option>
           @for (apt of appointments(); track apt._id) {
             <option [value]="apt._id">{{ apt.scheduledDate | dateFormat }} — {{ apt.startTime | dateFormat:'time' }}</option>
@@ -60,7 +57,10 @@
     <bc-card title="In-Call Chat">
       <div class="chat-messages">
         @for (msg of chatMessages(); track $index) {
-          <div class="chat-msg">{{ msg.content }}</div>
+          <div class="chat-msg" [class.chat-msg--own]="isOwnMessage(msg.sender)" [class.chat-msg--other]="!isOwnMessage(msg.sender)">
+            <span class="chat-msg__sender">{{ getMessageSenderLabel(msg.sender) }}</span>
+            <span class="chat-msg__content">{{ msg.content }}</span>
+          </div>
         } @empty {
           <p class="muted">No messages yet</p>
         }
