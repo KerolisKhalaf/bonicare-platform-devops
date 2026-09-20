@@ -32,3 +32,12 @@ output "subnet_name" {
   description = "Name of the subnet"
   value       = module.networking.subnet_name
 }
+output "nsg_id" {
+  description = "ID of the network security group"
+  value       = module.security.nsg_id
+}
+
+output "nsg_name" {
+  description = "Name of the network security group"
+  value       = module.security.nsg_name
+}

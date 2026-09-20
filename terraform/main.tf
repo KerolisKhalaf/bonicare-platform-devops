@@ -14,3 +14,10 @@ module "networking" {
   subnet_name             = var.subnet_name
   subnet_address_prefixes = var.subnet_address_prefixes
 }
+module "security" {
+  source = "./modules/security"
+
+  resource_group_name = module.resource_group.name
+  location            = var.location
+  nsg_name            = var.nsg_name
+}
