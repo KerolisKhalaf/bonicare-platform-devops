@@ -143,7 +143,7 @@ docker volume rm bonicare_redis_data
 
 - [ ] Change MongoDB default credentials
 - [ ] Change Redis password
-- [ ] Change Grafana admin password (not admin123)
+- [ ] Set `GRAFANA_ADMIN_PASSWORD` to a strong secret before starting monitoring
 - [ ] Set environment to production
 - [ ] Configure resource limits
 - [ ] Set up log rotation

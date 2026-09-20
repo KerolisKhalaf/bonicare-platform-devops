@@ -11,7 +11,6 @@ services:
     build:
       context: ../apps/bonicare-frontend
       dockerfile: Dockerfile
-    container_name: bonicare-frontend
     
     # Port mapping for HTTP
     ports:
@@ -56,11 +55,10 @@ services:
     build:
       context: ../apps/bonicare-backend
       dockerfile: Dockerfile
-    container_name: bonicare-backend
     
     # Port mapping for API
     ports:
-      - "3001:3000"
+      - "3000:3000"
     
     # Service restart policy (default: no restart)
     restart: no
@@ -123,7 +121,6 @@ services:
     build:
       context: ../apps/ai-service
       dockerfile: Dockerfile
-    container_name: bonicare-ai-service
     
     # Port mapping for API
     ports:
@@ -170,7 +167,6 @@ services:
     build:
       context: ../apps/webrtc
       dockerfile: Dockerfile
-    container_name: bonicare-webrtc
     
     # Port mapping for signaling server
     ports:
@@ -210,7 +206,6 @@ services:
   # ==========================
   mongo:
     image: mongo:7.0
-    container_name: bonicare-mongo
     
     # Port mapping for database access
     ports:
@@ -257,7 +252,6 @@ services:
   # ==========================
   redis:
     image: redis:7-alpine
-    container_name: bonicare-redis
     
     # Port mapping for cache access
     ports:
@@ -266,15 +260,9 @@ services:
     # Service restart policy (default: no restart)
     restart: no
     
-    # Command to start Redis with persistence
-    # --appendonly yes enables AOF (Append-Only File) persistence
-    command: redis-server --appendonly yes --loglevel warning
-    
-    # Volume mounts for data persistence
-    volumes:
-      # Named volume for Redis data persistence
-      - redis_data:/data
-    
+    # Redis is used for Socket.IO pub/sub only; it does not hold durable
+    # application state, so persistence is intentionally disabled.
+
     # Health check using Redis ping command
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -303,7 +291,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.24.0.0/16
+        - subnet: 172.30.0.0/16
 
 # ==========================
 # Volumes
