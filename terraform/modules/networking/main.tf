@@ -11,3 +11,9 @@ resource "azurerm_subnet" "this" {
   virtual_network_name = azurerm_virtual_network.this.name
   address_prefixes     = var.subnet_address_prefixes
 }
+resource "azurerm_subnet" "jenkins" {
+  name                 = var.jenkins_subnet_name
+  resource_group_name  = var.resource_group_name
+  virtual_network_name = azurerm_virtual_network.this.name
+  address_prefixes     = var.jenkins_subnet_address_prefixes
+}

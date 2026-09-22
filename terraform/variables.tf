@@ -86,3 +86,12 @@ variable "disk_free_alert_threshold" {
   description = "Disk free space percentage that triggers the alert"
   type        = number
 }
+variable "jenkins_subnet_name" {
+  description = "Name of the Jenkins subnet"
+  type        = string
+}
+
+variable "jenkins_subnet_address_prefixes" {
+  description = "Address prefixes for the Jenkins subnet"
+  type        = list(string)
+}

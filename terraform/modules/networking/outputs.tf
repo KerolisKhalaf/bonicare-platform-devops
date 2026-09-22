@@ -17,3 +17,7 @@ output "subnet_name" {
   description = "Name of the subnet"
   value       = azurerm_subnet.this.name
 }
+output "jenkins_subnet_id" {
+  description = "ID of the Jenkins subnet"
+  value       = azurerm_subnet.jenkins.id
+}
