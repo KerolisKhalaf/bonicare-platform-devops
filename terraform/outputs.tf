@@ -88,3 +88,12 @@ output "azure_monitor_agent_extension_id" {
   description = "ID of the Azure Monitor Agent extension"
   value       = module.monitoring.azure_monitor_agent_extension_id
 }
+output "data_collection_rule_id" {
+  description = "ID of the monitoring Data Collection Rule"
+  value       = module.monitoring.data_collection_rule_id
+}
+
+output "data_collection_rule_association_id" {
+  description = "ID of the VM Data Collection Rule association"
+  value       = module.monitoring.data_collection_rule_association_id
+}
