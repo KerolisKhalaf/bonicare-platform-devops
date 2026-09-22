@@ -11,3 +11,11 @@ nsg_name = "bonicare-nsg"
 public_ip_name              = "bonicare-pip"
 public_ip_allocation_method = "Static"
 public_ip_sku               = "Standard"
+
+vm_name = "bonicare-vm"
+
+vm_size = "Standard_B2ms"
+
+admin_username = "azureadmin"
+
+ssh_public_key = "YOUR_SSH_PUBLIC_KEY"

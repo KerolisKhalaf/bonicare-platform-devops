@@ -55,3 +55,22 @@ output "public_ip_name" {
   description = "Name of the public IP address"
   value       = module.public_ip.public_ip_name
 }
+output "vm_id" {
+  description = "ID of the virtual machine"
+  value       = module.vm.vm_id
+}
+
+output "vm_name" {
+  description = "Name of the virtual machine"
+  value       = module.vm.vm_name
+}
+
+output "vm_private_ip" {
+  description = "Private IP address of the virtual machine"
+  value       = module.vm.private_ip_address
+}
+
+output "vm_nic_id" {
+  description = "ID of the network interface"
+  value       = module.vm.nic_id
+}

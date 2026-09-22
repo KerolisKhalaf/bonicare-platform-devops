@@ -44,3 +44,22 @@ variable "public_ip_sku" {
   description = "SKU of the public IP"
   type        = string
 }
+variable "vm_name" {
+  description = "Name of the virtual machine"
+  type        = string
+}
+
+variable "vm_size" {
+  description = "Size of the virtual machine"
+  type        = string
+}
+
+variable "admin_username" {
+  description = "Admin username for the Linux VM"
+  type        = string
+}
+
+variable "ssh_public_key" {
+  description = "SSH public key used to access the Linux VM"
+  type        = string
+}
