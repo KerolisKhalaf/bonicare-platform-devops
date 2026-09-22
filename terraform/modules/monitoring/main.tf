@@ -15,3 +15,4 @@ resource "azurerm_virtual_machine_extension" "azure_monitor_agent" {
   type_handler_version       = "1.0"
   auto_upgrade_minor_version = true
 }
+
