@@ -63,3 +63,7 @@ variable "ssh_public_key" {
   description = "SSH public key used to access the Linux VM"
   type        = string
 }
+variable "monitoring_workspace_name" {
+  description = "Name of the Log Analytics workspace"
+  type        = string
+}

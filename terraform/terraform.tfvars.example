@@ -19,3 +19,5 @@ vm_size = "Standard_B2ms"
 admin_username = "azureadmin"
 
 ssh_public_key = "YOUR_SSH_PUBLIC_KEY"
+
+monitoring_workspace_name = "bonicare-law"

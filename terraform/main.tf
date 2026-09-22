@@ -46,3 +46,11 @@ module "vm" {
   nsg_id       = module.security.nsg_id
   public_ip_id = module.public_ip.public_ip_id
 }
+module "monitoring" {
+  source = "./modules/monitoring"
+
+  resource_group_name = module.resource_group.name
+  location            = var.location
+  workspace_name      = var.monitoring_workspace_name
+  vm_id               = module.vm.vm_id
+}

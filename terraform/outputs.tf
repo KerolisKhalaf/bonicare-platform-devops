@@ -74,3 +74,17 @@ output "vm_nic_id" {
   description = "ID of the network interface"
   value       = module.vm.nic_id
 }
+output "monitoring_workspace_id" {
+  description = "ID of the Log Analytics workspace"
+  value       = module.monitoring.workspace_id
+}
+
+output "monitoring_workspace_name" {
+  description = "Name of the Log Analytics workspace"
+  value       = module.monitoring.workspace_name
+}
+
+output "azure_monitor_agent_extension_id" {
+  description = "ID of the Azure Monitor Agent extension"
+  value       = module.monitoring.azure_monitor_agent_extension_id
+}

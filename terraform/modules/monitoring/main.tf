@@ -1,0 +1,17 @@
+resource "azurerm_log_analytics_workspace" "this" {
+  name                = var.workspace_name
+  location            = var.location
+  resource_group_name = var.resource_group_name
+
+  sku               = "PerGB2018"
+  retention_in_days = 30
+}
+
+resource "azurerm_virtual_machine_extension" "azure_monitor_agent" {
+  name                       = "AzureMonitorLinuxAgent"
+  virtual_machine_id         = var.vm_id
+  publisher                  = "Microsoft.Azure.Monitor"
+  type                       = "AzureMonitorLinuxAgent"
+  type_handler_version       = "1.0"
+  auto_upgrade_minor_version = true
+}
