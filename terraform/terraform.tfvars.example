@@ -21,3 +21,9 @@ admin_username = "azureadmin"
 ssh_public_key = "YOUR_SSH_PUBLIC_KEY"
 
 monitoring_workspace_name = "bonicare-law"
+
+alert_email = "your-email@example.com"
+
+cpu_alert_threshold        = 80
+memory_alert_threshold     = 80
+disk_free_alert_threshold  = 20

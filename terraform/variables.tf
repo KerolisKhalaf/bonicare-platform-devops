@@ -67,3 +67,22 @@ variable "monitoring_workspace_name" {
   description = "Name of the Log Analytics workspace"
   type        = string
 }
+variable "alert_email" {
+  description = "Email address that will receive monitoring alerts"
+  type        = string
+}
+
+variable "cpu_alert_threshold" {
+  description = "CPU usage percentage that triggers the alert"
+  type        = number
+}
+
+variable "memory_alert_threshold" {
+  description = "Memory usage percentage that triggers the alert"
+  type        = number
+}
+
+variable "disk_free_alert_threshold" {
+  description = "Disk free space percentage that triggers the alert"
+  type        = number
+}

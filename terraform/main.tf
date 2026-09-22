@@ -53,4 +53,9 @@ module "monitoring" {
   location            = var.location
   workspace_name      = var.monitoring_workspace_name
   vm_id               = module.vm.vm_id
+
+  alert_email               = var.alert_email
+  cpu_alert_threshold       = var.cpu_alert_threshold
+  memory_alert_threshold    = var.memory_alert_threshold
+  disk_free_alert_threshold = var.disk_free_alert_threshold
 }
