@@ -79,3 +79,19 @@ module "jenkins_public_ip" {
   allocation_method   = var.jenkins_public_ip_allocation_method
   sku                 = var.jenkins_public_ip_sku
 }
+module "jenkins_vm" {
+  source = "./modules/jenkins-vm"
+
+  resource_group_name = module.resource_group.name
+  location            = var.location
+
+  vm_name = var.jenkins_vm_name
+  vm_size = var.jenkins_vm_size
+
+  admin_username = var.admin_username
+  ssh_public_key = var.ssh_public_key
+
+  subnet_id    = module.networking.jenkins_subnet_id
+  nsg_id       = module.jenkins_security.nsg_id
+  public_ip_id = module.jenkins_public_ip.public_ip_id
+}

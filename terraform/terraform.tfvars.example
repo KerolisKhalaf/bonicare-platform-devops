@@ -34,3 +34,6 @@ jenkins_nsg_name = "jenkins-nsg"
 jenkins_public_ip_name              = "jenkins-pip"
 jenkins_public_ip_allocation_method = "Static"
 jenkins_public_ip_sku               = "Standard"
+
+jenkins_vm_name = "jenkins-vm"
+jenkins_vm_size = "Standard_B2s_v2"
