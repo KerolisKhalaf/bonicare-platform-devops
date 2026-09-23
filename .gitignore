@@ -6,9 +6,7 @@
 /out-tsc
 # Only exists if Bazel was run
 /bazel-out
-package-lock.json
-*package-lock.json*
-**package-lock.json
+
 
 # dependencies
 */node_modules/*
@@ -59,3 +57,5 @@ infra/ansible/inventory/local.ini
 infra/ansible/inventory/local.*
 infra/ansible/generated/
 infra/ansible/.cache/
+
+stripe.exe
