@@ -120,3 +120,22 @@ output "jenkins_public_ip_name" {
   description = "Name of the Jenkins public IP"
   value       = module.jenkins_public_ip.public_ip_name
 }
+output "jenkins_vm_id" {
+  description = "ID of the Jenkins virtual machine"
+  value       = module.jenkins_vm.vm_id
+}
+
+output "jenkins_vm_name" {
+  description = "Name of the Jenkins virtual machine"
+  value       = module.jenkins_vm.vm_name
+}
+
+output "jenkins_vm_private_ip" {
+  description = "Private IP address of the Jenkins VM"
+  value       = module.jenkins_vm.private_ip_address
+}
+
+output "jenkins_vm_nic_id" {
+  description = "ID of the Jenkins VM network interface"
+  value       = module.jenkins_vm.nic_id
+}
