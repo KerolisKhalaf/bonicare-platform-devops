@@ -1,0 +1,36 @@
+project_name = "bonicare"
+location     = "France Central"
+
+vnet_name               = "bonicare-vnet"
+vnet_address_space      = ["10.0.0.0/16"]
+subnet_name             = "bonicare-subnet"
+subnet_address_prefixes = ["10.0.1.0/24"]
+
+nsg_name = "bonicare-nsg"
+
+public_ip_name              = "bonicare-pip"
+public_ip_allocation_method = "Static"
+public_ip_sku               = "Standard"
+
+vm_name = "bonicare-vm"
+
+vm_size = "Standard_B2ms"
+
+admin_username = "azureadmin"
+
+ssh_public_key = "YOUR_SSH_PUBLIC_KEY"
+
+monitoring_workspace_name = "bonicare-law"
+
+alert_email = "your-email@example.com"
+
+cpu_alert_threshold        = 80
+memory_alert_threshold     = 80
+disk_free_alert_threshold  = 20
+
+jenkins_subnet_name             = "jenkins-subnet"
+jenkins_subnet_address_prefixes = ["10.0.2.0/24"]
+jenkins_nsg_name = "jenkins-nsg"
+jenkins_public_ip_name              = "jenkins-pip"
+jenkins_public_ip_allocation_method = "Static"
+jenkins_public_ip_sku               = "Standard"

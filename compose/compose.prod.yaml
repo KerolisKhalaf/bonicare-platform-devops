@@ -1,5 +1,3 @@
-version: '3.9'
-
 # ==========================
 # Production Overrides for compose.yaml
 # ==========================
@@ -39,6 +37,7 @@ services:
   # Backend Production
   # ==========================
   backend:
+    ports: !reset []
     # Override: Production restart policy
     restart: unless-stopped
     
@@ -83,6 +82,7 @@ services:
   # AI Service Production
   # ==========================
   ai-service:
+    ports: !reset []
     # Override: Production restart policy
     restart: unless-stopped
     
@@ -113,7 +113,7 @@ services:
     # Override: Remove bind mounts
     volumes:
       # Keep only models directory as read-only
-      - ./apps/ai-service/models:/app/models:ro
+      - ../apps/ai-service/models:/app/models:ro
     
     # Override: Read-only filesystem
     read_only: true
@@ -127,6 +127,7 @@ services:
   # WebRTC Production
   # ==========================
   webrtc:
+    ports: !reset []
     # Override: Production restart policy
     restart: unless-stopped
     
@@ -162,6 +163,7 @@ services:
   # MongoDB Production
   # ==========================
   mongo:
+    ports: !reset []
     # Override: Production restart policy
     restart: unless-stopped
     
@@ -220,20 +222,14 @@ services:
         max-file: "5"
         labels: "service=redis"
     
-    # Override: Production command with additional optimizations
+    # Redis is used for Socket.IO pub/sub only; it does not hold durable
+    # application state, so persistence is intentionally disabled.
     command: >
       redis-server
-      --appendonly yes
       --loglevel warning
       --maxmemory 512mb
       --maxmemory-policy allkeys-lru
-      --save 900 1
-      --save 300 10
-      --save 60 10000
-    
-    # Keep volumes for data persistence
-    volumes:
-      - redis_data:/data
+    ports: !reset []
 
 # ==========================
 # Production Volume Definitions
@@ -242,8 +238,6 @@ volumes:
   mongo_data:
     driver: local
   mongo_backups:
-    driver: local
-  redis_data:
     driver: local
   backend_uploads:
     driver: local

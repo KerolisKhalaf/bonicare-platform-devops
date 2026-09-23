@@ -53,6 +53,11 @@ export class AuthService {
     return this._token();
   }
 
+  updateUser(user: AuthUser): void {
+    this._user.set(user);
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  }
+
   hasRole(...roles: AuthUser['role'][]): boolean {
     const userRole = this._user()?.role;
     return !!userRole && roles.includes(userRole);

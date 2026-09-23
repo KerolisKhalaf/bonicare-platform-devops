@@ -43,6 +43,9 @@ COPY --from=builder --chown=appuser:appuser /build/node_modules ./node_modules
 # Copy application code with proper ownership
 COPY --chown=appuser:appuser . .
 
+# Remove development-only dependencies from the runtime tree.
+RUN npm prune --omit=dev
+
 # Switch to non-root user
 USER appuser
 

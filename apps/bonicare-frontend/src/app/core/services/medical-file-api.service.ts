@@ -9,16 +9,24 @@ export class MedicalFileApiService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/files`;
 
-  upload(file: File): Observable<HttpEvent<ApiSuccessResponse<MedicalFile>>> {
+  list(): Observable<ApiSuccessResponse<MedicalFile[]>> {
+    return this.http.get<ApiSuccessResponse<MedicalFile[]>>(`${this.baseUrl}`);
+  }
+
+  upload(file: File, modality = 'Unknown', part = 'Unknown'): Observable<HttpEvent<ApiSuccessResponse<MedicalFile>>> {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('modality', modality);
+    formData.append('part', part);
+
     return this.http.post<ApiSuccessResponse<MedicalFile>>(`${this.baseUrl}/upload`, formData, {
       reportProgress: true,
       observe: 'events',
     });
   }
 
-  getDownloadUrl(filename: string): string {
-    return `${this.baseUrl}/${filename}`;
+  delete(filename: string): Observable<ApiSuccessResponse<MedicalFile>> {
+    return this.http.delete<ApiSuccessResponse<MedicalFile>>(`${this.baseUrl}/${encodeURIComponent(filename)}`);
   }
+
 }

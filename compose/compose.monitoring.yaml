@@ -1,5 +1,3 @@
-version: '3.9'
-
 # ==========================
 # BoniCare Monitoring Stack
 # ==========================
@@ -21,7 +19,6 @@ services:
   # ==========================
   prometheus:
     image: prom/prometheus:latest
-    container_name: bonicare-prometheus
     
     # Port mapping
     ports:
@@ -72,7 +69,6 @@ services:
   # ==========================
   grafana:
     image: grafana/grafana:latest
-    container_name: bonicare-grafana
     
     # Port mapping
     ports:
@@ -84,7 +80,7 @@ services:
     # Environment variables
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set}
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_SERVER_ROOT_URL=http://grafana:3000
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
@@ -128,7 +124,6 @@ services:
   # ==========================
   loki:
     image: grafana/loki:latest
-    container_name: bonicare-loki
     
     # Port mapping
     ports:
@@ -147,14 +142,6 @@ services:
       # Loki data storage
       - loki_data:/loki
     
-    # Health check
-    healthcheck:
-      test: ["CMD", "wget", "--tries=1", "--spider", "http://localhost:3100/ready"]
-      interval: 30s
-      timeout: 10s
-      start_period: 5s
-      retries: 3
-    
     # Network attachment
     networks:
       - bonicare-network
@@ -172,7 +159,6 @@ services:
   # ==========================
   tempo:
     image: grafana/tempo:latest
-    container_name: bonicare-tempo
     
     # Port mapping
     ports:
@@ -193,14 +179,6 @@ services:
       # Tempo data storage
       - tempo_data:/var/tempo
     
-    # Health check
-    healthcheck:
-      test: ["CMD", "wget", "--tries=1", "--spider", "http://localhost:3200/ready"]
-      interval: 30s
-      timeout: 10s
-      start_period: 5s
-      retries: 3
-    
     # Network attachment
     networks:
       - bonicare-network
@@ -218,7 +196,6 @@ services:
   # ==========================
   alertmanager:
     image: prom/alertmanager:latest
-    container_name: bonicare-alertmanager
     
     # Port mapping
     ports:
@@ -264,7 +241,6 @@ services:
   # ==========================
   node-exporter:
     image: prom/node-exporter:latest
-    container_name: bonicare-node-exporter
     
     # Port mapping
     ports:
@@ -302,11 +278,6 @@ services:
   # ==========================
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
-    container_name: bonicare-cadvisor
-    
-    # Port mapping
-    ports:
-      - "8080:8080"
     
     # Restart policy
     restart: unless-stopped
@@ -343,16 +314,14 @@ services:
 networks:
   # Bridge to BoniCare application network
   bonicare-network:
-    name: bonicare-network
     driver: bridge
-    external: true  # This network must exist (created by compose.yaml)
   
   # Separate network for monitoring stack (optional)
   monitoring-network:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.21.0.0/16
+        - subnet: 172.31.0.0/16
 
 # ==========================
 # Volumes

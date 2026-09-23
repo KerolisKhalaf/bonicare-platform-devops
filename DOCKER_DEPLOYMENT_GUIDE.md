@@ -73,7 +73,7 @@ docker-compose -f compose/compose.yaml -f compose/compose.prod.yaml \
 
 # Access monitoring tools
 # - Prometheus: http://localhost:9090
-# - Grafana: http://localhost:3001 (admin/admin123)
+# - Grafana: http://localhost:3001 (admin and the value of GRAFANA_ADMIN_PASSWORD)
 # - Loki: http://localhost:3100
 # - Tempo: http://localhost:3200
 # - AlertManager: http://localhost:9093
@@ -482,7 +482,7 @@ docker-compose exec redis redis-cli slowlog get 10
 
 - **MongoDB**: Enable authentication in production
 - **Redis**: Set password via environment variable
-- **Grafana**: Change default admin password (admin123)
+- **Grafana**: Set `GRAFANA_ADMIN_PASSWORD` to a strong secret before starting monitoring
 
 ### Network Security
 

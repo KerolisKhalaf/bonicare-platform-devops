@@ -7,7 +7,6 @@ variable "NAMESPACE" {
 }
 
 variable "VERSION" {
-  default = "latest"
 }
 
 # مجموعة الاستهدافات للخدمات
@@ -46,8 +45,7 @@ target "backend" {
   dockerfile = "Dockerfile"
 
   tags = [
-    "${REGISTRY}/${NAMESPACE}/bonicare-backend:${VERSION}",
-    "${REGISTRY}/${NAMESPACE}/bonicare-backend:latest"
+    "${REGISTRY}/${NAMESPACE}/bonicare-backend:${VERSION}"
   ]
 
 }
@@ -61,8 +59,7 @@ target "frontend" {
   dockerfile = "Dockerfile"
 
   tags = [
-    "${REGISTRY}/${NAMESPACE}/bonicare-frontend:${VERSION}",
-    "${REGISTRY}/${NAMESPACE}/bonicare-frontend:latest"
+    "${REGISTRY}/${NAMESPACE}/bonicare-frontend:${VERSION}"
   ]
 
 }
@@ -76,8 +73,7 @@ target "ai-service" {
   dockerfile = "Dockerfile"
 
   tags = [
-    "${REGISTRY}/${NAMESPACE}/bonicare-ai-service:${VERSION}",
-    "${REGISTRY}/${NAMESPACE}/bonicare-ai-service:latest"
+    "${REGISTRY}/${NAMESPACE}/bonicare-ai-service:${VERSION}"
   ]
 
 }
@@ -91,8 +87,7 @@ target "webrtc" {
   dockerfile = "Dockerfile"
 
   tags = [
-    "${REGISTRY}/${NAMESPACE}/bonicare-webrtc:${VERSION}",
-    "${REGISTRY}/${NAMESPACE}/bonicare-webrtc:latest"
+    "${REGISTRY}/${NAMESPACE}/bonicare-webrtc:${VERSION}"
   ]
 
 }

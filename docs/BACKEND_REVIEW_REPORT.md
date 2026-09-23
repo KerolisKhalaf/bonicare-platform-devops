@@ -1,17 +1,17 @@
 # BoniCare Backend API Review Report
 
-**Date:** June 21, 2026  
+**Date:** September 18, 2026  
 **Reviewer:** Principal Software Engineer (Frontend Architecture)  
 **Backend:** `orthopedic-platform-BoniCare-` (Node.js / Express / MongoDB)  
-**Status:** Review complete — **no backend modifications made**
+**Status:** Updated after implementation and native integration testing
 
 ---
 
 ## Executive Summary
 
-The BoniCare backend exposes a functional REST API with JWT authentication, Stripe payments, AI integration (via FastAPI microservice), Socket.IO chat, and Firebase push notifications. However, **significant gaps exist** between documented requirements, Swagger specification, README, and actual route wiring. The frontend can integrate with **22 implemented REST endpoints**, but several critical features (admin portal, video consultation, payment history, file download/delete, password reset, notification center) require **backend additions** before full production readiness.
+The BoniCare backend exposes a functional REST API with JWT authentication, Stripe payments, AI integration (via FastAPI microservice), Socket.IO chat, file management, patient profiles, and a separate WebRTC signaling service. Documentation drift remains in several areas, but the previously missing patient profile and medical-file workflows are now implemented. Production gaps remain around AI authorization, admin APIs, payment history, TURN infrastructure, and automated browser coverage.
 
-**Recommendation:** Proceed with frontend development against existing APIs. Defer video consultation UI signaling until backend WebRTC events are approved and implemented. Report gaps to backend team for phased delivery.
+**Recommendation:** Continue review on the implemented native communication flow, then add server-side appointment authorization, TURN configuration, and end-to-end two-browser tests before production rollout.
 
 ---
 
@@ -22,7 +22,7 @@ The BoniCare backend exposes a functional REST API with JWT authentication, Stri
 |--------|-----|
 | Swagger `servers` | `http://localhost:3000/api/v1` |
 | `.env.example` | `PORT=3000` |
-| `server.js` default | `PORT=5000` (if env unset) |
+| `server.js` default | `PORT=3000` (configured for local and Docker development) |
 
 **Issue:** Port mismatch between Swagger/docs (3000) and server fallback (5000).
 
@@ -41,7 +41,9 @@ The BoniCare backend exposes a functional REST API with JWT authentication, Stri
 
 | Method | Path | Auth | Roles | Response |
 |--------|------|------|-------|----------|
-| GET | `/patient/dashboard` | Bearer | `patient` | `{ success, patient, files, ai_reports, appointments: [] }` |
+| GET | `/patient/dashboard` | Bearer | `patient` | `{ success, patient, files, ai_reports, appointments }` |
+| GET | `/patient/profile` | Bearer | `patient` | `{ success, data: { user, patient } }` |
+| PUT | `/patient/profile` | Bearer | `patient` | `{ name?, phone?, dob?, gender?, medical_history? }` | `{ success, data: { user, patient } }` |
 
 **Notes:** `appointments` is hardcoded empty array in controller — not populated from DB.
 
@@ -71,10 +73,11 @@ The BoniCare backend exposes a functional REST API with JWT authentication, Stri
 | Method | Path | Auth | Roles | Request | Response |
 |--------|------|------|-------|---------|----------|
 | POST | `/files/upload` | Bearer | `patient` | `multipart/form-data` field `file` | `{ success, message, data: { originalname, filename, path, size, mimetype } }` |
+| GET | `/files` | Bearer | `patient` | — | `{ success, data: MedicalFile[] }` |
+| GET | `/files/:filename` | Bearer | `patient` | — | File content |
+| DELETE | `/files/:filename` | Bearer | `patient` | — | `{ success, message }` |
 
-**Critical:** `getAllFiles`, `getFileByName`, `deleteFile` exist in `filesController.js` but are **not registered in `files.js` routes**.
-
-**Critical:** Upload does not persist `MedicalFile` MongoDB document — only saves to disk.
+File upload persists the binary under `apps/bonicare-backend/uploads/` in native/local storage and saves patient-scoped metadata in MongoDB. Listing and deletion are registered and protected for patients.
 
 ### AI (`/api/v1/ai`)
 
@@ -100,7 +103,7 @@ The BoniCare backend exposes a functional REST API with JWT authentication, Stri
 | PATCH | `/notification/preferences` | Bearer | Any authenticated | `{ pushEnabled?, emailEnabled? }` | `{ status, data }` |
 | POST | `/notification/token` | Bearer | Any authenticated | `{ fcmToken }` | `{ status, message }` |
 
-### Socket.IO Events (Chat Only)
+### Socket.IO Events (Chat)
 
 | Event | Direction | Payload | Purpose |
 |-------|-----------|---------|---------|
@@ -108,6 +111,8 @@ The BoniCare backend exposes a functional REST API with JWT authentication, Stri
 | `sendMessage` | Client → Server | `{ receiverId, conversationId, content, ... }` | Send chat |
 | `newMessage` | Server → Client | `message` | Broadcast message |
 | `error` | Server → Client | string | Error feedback |
+
+The separate WebRTC service at `localhost:5002` handles `call:ping`, `call:join`, `call:peer-joined`, `call:peer-left`, `call:offer`, `call:answer`, `call:ice-candidate`, and `call:leave`. Appointment IDs are used as rooms for both signaling and in-call chat.
 
 ---
 
@@ -121,7 +126,6 @@ The BoniCare backend exposes a functional REST API with JWT authentication, Stri
 | `POST /auth/refresh-token` | Medium | Env vars exist but no endpoint |
 | `GET /auth/me` | Medium | Profile bootstrap without decode |
 | `PUT /auth/profile` | Medium | User profile update |
-| `PUT /patient/profile` | High | Patient DOB, gender, medical history |
 
 ### Admin Portal
 | Missing Endpoint | Priority |
@@ -138,10 +142,6 @@ The BoniCare backend exposes a functional REST API with JWT authentication, Stri
 ### Medical Files
 | Missing Endpoint | Priority | Notes |
 |------------------|----------|-------|
-| `GET /files` | High | Controller exists, route missing |
-| `GET /files/:filename` | High | Controller exists, route missing |
-| `DELETE /files/:filename` | High | Controller exists, route missing |
-| Link upload to `MedicalFile` model | Critical | Upload doesn't save DB record |
 | `GET /doctor/patients/:id/files` | High | Doctor patient records access |
 
 ### AI
@@ -168,14 +168,12 @@ The BoniCare backend exposes a functional REST API with JWT authentication, Stri
 | Socket `notification` event | High |
 
 ### Video Consultation (WebRTC)
-| Missing Capability | Priority |
+| Remaining Capability | Priority |
 |--------------------|----------|
-| `joinCall` / `leaveCall` socket events | Critical |
-| `webrtc-offer` / `webrtc-answer` | Critical |
-| `ice-candidate` relay | Critical |
-| `call-state` (ringing, connected, ended) | High |
-| `GET /appointment/:id/call-token` or room ID | High |
-| TURN server configuration endpoint | Medium |
+| Server-side appointment authorization for signaling rooms | High |
+| TURN server configuration for production NAT traversal | High |
+| Call duration/state persistence | Medium |
+| Automated two-browser media test | High |
 
 ### Appointments
 | Missing Endpoint | Priority |
@@ -193,7 +191,7 @@ The BoniCare backend exposes a functional REST API with JWT authentication, Stri
 | Global `security: bearerAuth` | Medium | Auth endpoints incorrectly show as requiring JWT |
 | Path inconsistencies | High | Swagger documents `/appointment` POST/GET but routes are `/appointment/book`, `/appointment/my-appointments` |
 | Swagger documents `/appointment/doctor/{doctorId}/availability` | Medium | Actual route: `/appointment/doctors/:doctorId/availability` |
-| Files endpoints documented but not routed | High | GET/DELETE in controller JSDoc only |
+| File endpoint documentation | Low | Controller JSDoc should be kept synchronized with route definitions |
 | Notification endpoints lack Swagger JSDoc | Low | Only in route file comments |
 | AI endpoints missing `security` | Critical | Undocumented public access |
 | Request/response schemas incomplete | Medium | Most endpoints lack response schema definitions |
@@ -209,8 +207,7 @@ The BoniCare backend exposes a functional REST API with JWT authentication, Stri
 | Socket.IO CORS `origin: '*'` | High | Restrict to frontend origin |
 | No rate limiting | High | Add express-rate-limit |
 | Helmet imported in README but not in `server.js` | Medium | Enable security headers |
-| File upload doesn't associate with patient | High | Validate ownership, save metadata |
-| `getAllFiles` lists all server files | Critical | If routed, exposes all uploads |
+| File access is patient-only today | Medium | Add explicitly authorized doctor access when the doctor-records workflow is implemented |
 | JWT single token, no refresh rotation | Medium | Implement refresh flow |
 | Payment create-intent doesn't verify appointment ownership | Medium | Validate `patientId` matches |
 | No CSRF for cookie-based auth | Low | OK if JWT in Authorization header only |
@@ -235,31 +232,25 @@ The BoniCare backend exposes a functional REST API with JWT authentication, Stri
 ## 6. Video Consultation Requirements
 
 ### Current State
-Socket.IO is initialized with Redis adapter. Only **text chat** is supported.
+The backend Socket.IO server provides appointment-room text chat. A separate Socket.IO WebRTC service provides signaling for native development. Both flows use the appointment ID as the room key.
 
-### Required Backend Changes (Pending Approval)
+### Implemented Signaling Events
 
 ```
-// Proposed Socket.IO events
 'call:join'       → { appointmentId, userId, role }
 'call:leave'      → { appointmentId }
 'call:offer'      → { appointmentId, sdp }
 'call:answer'     → { appointmentId, sdp }
 'call:ice-candidate' → { appointmentId, candidate }
-'call:state'      → { appointmentId, state: 'ringing'|'connected'|'ended' }
-'call:media-state' → { appointmentId, audio, video, screen }
-
-// Proposed REST endpoints
-GET  /appointment/:id/call-room     → { roomId, iceServers, expiresAt }
-POST /appointment/:id/call/start    → Initiate call (doctor/patient)
-POST /appointment/:id/call/end      → End call, log duration
+'call:peer-joined' → { appointmentId, peerCount }
+'call:peer-left'   → { appointmentId }
 ```
 
-### Frontend Approach (Until Backend Ready)
-- Build WebRTC service architecture with signaling abstraction
-- Implement UI shell (controls, connection states, quality indicators)
-- Display **"Video consultation unavailable — signaling server not configured"** when backend events missing
-- Enable in-call chat via existing `sendMessage`/`joinConversation` if conversation linked to appointment
+### Remaining Video Consultation Work
+- Add server-side appointment authorization before allowing a signaling room join.
+- Configure TURN servers for production NAT traversal.
+- Persist call state/duration if required by product reporting.
+- Add automated two-browser media and chat tests.
 
 ---
 
@@ -294,19 +285,16 @@ POST /appointment/:id/call/end      → End call, log duration
 
 ### P0 — Before Production
 1. Add auth middleware to all `/ai/*` routes
-2. Wire file GET/DELETE routes with patient/doctor authorization
-3. Persist `MedicalFile` on upload
-4. Fix patient dashboard appointments population
-5. Add `GET /payment/history` for authenticated user
-6. Add admin route module with RBAC
-7. Fix PORT consistency (3000 everywhere)
-8. Add `GET /notification` with pagination
+2. Add server-side appointment authorization to WebRTC signaling rooms
+3. Add TURN infrastructure for production calls
+4. Add `GET /payment/history` for authenticated users
+5. Add admin route module with RBAC
+6. Add `GET /notification` with pagination
 
 ### P1 — Video & Real-time
-1. WebRTC signaling socket events
-2. Call room management tied to appointments
-3. Socket notification broadcast
-4. TURN/STUN config endpoint
+1. Persist call state and duration if required
+2. Add notification events and read-state handling
+3. Add browser-level WebRTC and chat tests
 
 ### P2 — Completeness
 1. Password reset flow
@@ -322,17 +310,17 @@ POST /appointment/:id/call/end      → End call, log duration
 | Module | Integration Status |
 |--------|-------------------|
 | Authentication | ✅ Full |
-| Patient Dashboard | ⚠️ Partial (empty appointments) |
+| Patient Dashboard | ✅ Appointments, files, reports, and profile data |
 | Doctor Portal | ✅ Full |
 | Appointments | ✅ Full |
-| Medical Files | ⚠️ Upload only |
+| Medical Files | ✅ Upload, patient-scoped listing, and deletion |
 | AI Reports | ⚠️ Predict + dashboard list; no dedicated list API |
 | Payments | ⚠️ Create intent + Stripe UI only |
 | Notifications | ⚠️ Preferences + FCM token only |
 | Admin | ❌ No backend — UI shell with gap notice |
-| Video Consultation | ❌ Signaling service stub + gap notice |
+| Video Consultation | ✅ Native signaling, two-party negotiation, and in-call chat; TURN and authorization remain |
 
-**Awaiting approval before any backend modifications.**
+**Review reflects the current implementation. Remaining gaps are production hardening and feature-completeness items listed above.**
 
 ---
 

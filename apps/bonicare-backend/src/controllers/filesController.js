@@ -2,6 +2,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import AppError from "../utils/AppError.js";
+import MedicalFile from "../models/medicalFile.js";
+import Patient from "../models/patient.js";
 
 // folder where uploads are saved
 const uploadDir = path.join(process.cwd(), "uploads");
@@ -38,25 +40,47 @@ export const uploadMedicalFile = async (req, res) => {
     throw new AppError("No file uploaded", 400);
   }
 
+  const patient = await Patient.findOne({ user: req.user.id });
+  if (!patient) {
+    throw new AppError("Patient profile not found", 404);
+  }
+
+  const medicalFile = await MedicalFile.create({
+    patient: patient._id,
+    uploader: req.user.id,
+    filename: req.file.filename,
+    originalName: req.file.originalname,
+    mimeType: req.file.mimetype,
+    size: req.file.size,
+    path: req.file.path,
+    modality: req.body.modality || "Unknown",
+    part: req.body.part || "Unknown",
+  });
+
   return res.status(200).json({
     success: true,
     message: "File uploaded successfully",
     data: {
-      originalname: req.file.originalname,
-      filename: req.file.filename,
-      path: req.file.path,
-      size: req.file.size,
-      mimetype: req.file.mimetype,
+      id: medicalFile._id,
+      originalname: medicalFile.originalName,
+      filename: medicalFile.filename,
+      path: medicalFile.path,
+      size: medicalFile.size,
+      mimetype: medicalFile.mimeType,
+      modality: medicalFile.modality,
+      part: medicalFile.part,
     },
   });
 };
 
-// Get all uploaded files
+// Get all uploaded files for the current patient
 export const getAllFiles = async (req, res) => {
-  const files = fs.readdirSync(uploadDir).map((file) => ({
-    filename: file,
-    path: path.join(uploadDir, file),
-  }));
+  const patient = await Patient.findOne({ user: req.user.id });
+  if (!patient) {
+    throw new AppError("Patient profile not found", 404);
+  }
+
+  const files = await MedicalFile.find({ patient: patient._id }).sort({ uploadedAt: -1 }).lean();
 
   return res.status(200).json({ success: true, data: files });
 };
@@ -105,12 +129,22 @@ export const getFileByName = async (req, res) => {
 // Delete a file by filename
 export const deleteFile = async (req, res) => {
   const { filename } = req.params;
-  const filePath = path.join(uploadDir, filename);
+  const patient = await Patient.findOne({ user: req.user.id });
+  if (!patient) {
+    throw new AppError("Patient profile not found", 404);
+  }
 
-  if (!fs.existsSync(filePath)) {
+  const medicalFile = await MedicalFile.findOne({ filename, patient: patient._id });
+  if (!medicalFile) {
     throw new AppError("File not found", 404);
   }
 
-  fs.unlinkSync(filePath);
+  const filePath = path.join(uploadDir, filename);
+
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+  }
+
+  await MedicalFile.deleteOne({ _id: medicalFile._id });
   return res.status(200).json({ success: true, message: "File deleted successfully" });
 };

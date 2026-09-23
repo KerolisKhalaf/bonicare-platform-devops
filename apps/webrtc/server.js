@@ -19,11 +19,35 @@ app.get('/health', (req, res) => {
 
 io.on('connection', socket => {
   console.log('🔹 Peer connected', socket.id);
-  socket.on('call:join', data => socket.join(data.appointmentId));
+  socket.on('call:ping', () => socket.emit('call:pong'));
+  socket.on('call:join', data => {
+    const room = io.sockets.adapter.rooms.get(data.appointmentId);
+    const peerCount = room?.size ?? 0;
+    const initiator = peerCount === 0;
+    socket.join(data.appointmentId);
+    socket.emit('call:joined', { appointmentId: data.appointmentId, initiator, peerCount: peerCount + 1 });
+    if (peerCount > 0) {
+      socket.to(data.appointmentId).emit('call:peer-joined', {
+        appointmentId: data.appointmentId,
+        peerCount: peerCount + 1,
+      });
+    }
+  });
   socket.on('call:offer', data => socket.to(data.appointmentId).emit('call:offer', data));
   socket.on('call:answer', data => socket.to(data.appointmentId).emit('call:answer', data));
   socket.on('call:ice-candidate', data => socket.to(data.appointmentId).emit('call:ice-candidate', data));
-  socket.on('call:leave', data => socket.leave(data.appointmentId));
+  socket.on('call:leave', data => {
+    socket.leave(data.appointmentId);
+    socket.to(data.appointmentId).emit('call:peer-left', {
+      appointmentId: data.appointmentId,
+    });
+  });
+  socket.on('disconnecting', () => {
+    for (const roomId of socket.rooms) {
+      if (roomId === socket.id) continue;
+      socket.to(roomId).emit('call:peer-left', { appointmentId: roomId });
+    }
+  });
   socket.on('disconnect', () => console.log('🔻 Peer disconnected'));
 });
 

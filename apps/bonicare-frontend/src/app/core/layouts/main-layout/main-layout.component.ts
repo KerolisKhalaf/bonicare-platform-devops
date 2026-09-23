@@ -32,7 +32,7 @@ export class MainLayoutComponent {
   readonly navItems: NavItem[] = [
     { label: 'Dashboard', path: '/patient', image: '/images/Dashboard.png', roles: ['patient'] },
     { label: 'Appointments', path: '/appointments', image: '/images/Calender.png', roles: ['patient', 'doctor', 'admin'] },
-    { label: 'Medical Files', path: '/photos/bone-icon.png', roles: ['patient'] },
+    { label: 'Medical Files', path: '/patient/medical-files', image: '/photos/bone-icon.png', roles: ['patient'] },
     { label: 'AI Reports', path: '/ai', image: '/photos/stethoscope.png', roles: ['patient', 'doctor'] },
     { label: 'Payments', path: '/payments', image: '/photos/Card.png', roles: ['patient', 'doctor', 'admin'] },
     { label: 'Notifications', path: '/notifications', image: '/images/bell-btn.png', roles: ['patient', 'doctor', 'admin'] },

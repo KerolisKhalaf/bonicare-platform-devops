@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
 
 // allowed mimetypes (add as needed)
 const ALLOWED = [
-  'image/png', 'image/jpeg', 'image/jpg', 
+  'image/png', 'image/jpeg', 'image/jpg', 'image/webp',
   'application/dicom', // note: many DICOMs have different mime; handle by extension too
   'application/pdf'
 ];

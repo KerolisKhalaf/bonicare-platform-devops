@@ -17,6 +17,7 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   role: 'patient' | 'doctor' | 'admin';
 }
 
@@ -46,6 +47,14 @@ export interface PatientProfile {
   gender?: 'male' | 'female' | 'other';
   medical_history?: Record<string, unknown>;
   createdAt?: string;
+}
+
+export interface UpdatePatientProfileRequest {
+  name?: string;
+  phone?: string;
+  dob?: string;
+  gender?: PatientProfile['gender'];
+  medical_history?: Record<string, unknown>;
 }
 
 export interface DoctorProfile {

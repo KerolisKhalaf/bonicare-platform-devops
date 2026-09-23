@@ -26,15 +26,36 @@
       </bc-card>
       <bc-card title="Profile">
         @if (patient()) {
-          <div class="profile-card-content">
-            <img [src]="getPatientAvatar()" class="profile-card-avatar" alt="Patient Avatar" />
-            <div class="profile-card-details">
-              <strong>{{ user()?.name }}</strong>
-              <span class="profile-card-email">{{ user()?.email }}</span>
-              <span>Gender: {{ patient()?.gender ?? 'Not set' }}</span>
-              <span class="profile-card-date">Member since: {{ patient()?.createdAt | dateFormat }}</span>
+          @if (editingProfile()) {
+            <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="profile-form">
+              <label>Name <input type="text" formControlName="name" required /></label>
+              <label>Phone <input type="tel" formControlName="phone" /></label>
+              <label>Date of birth <input type="date" formControlName="dob" /></label>
+              <label>Gender
+                <select formControlName="gender">
+                  <option value="">Not set</option>
+                  <option value="female">Female</option>
+                  <option value="male">Male</option>
+                  <option value="other">Other</option>
+                </select>
+              </label>
+              <div class="profile-form__actions">
+                <bc-button type="submit">Save</bc-button>
+                <bc-button type="button" variant="ghost" (clicked)="editingProfile.set(false)">Cancel</bc-button>
+              </div>
+            </form>
+          } @else {
+            <div class="profile-card-content">
+              <img [src]="getPatientAvatar()" class="profile-card-avatar" alt="Patient Avatar" />
+              <div class="profile-card-details">
+                <strong>{{ user()?.name }}</strong>
+                <span class="profile-card-email">{{ user()?.email }}</span>
+                <span>Gender: {{ patient()?.gender ?? 'Not set' }}</span>
+                <span class="profile-card-date">Member since: {{ patient()?.createdAt | dateFormat }}</span>
+              </div>
             </div>
-          </div>
+            <bc-button variant="outline" size="sm" (clicked)="editingProfile.set(true)">Edit Profile</bc-button>
+          }
         }
       </bc-card>
     </div>

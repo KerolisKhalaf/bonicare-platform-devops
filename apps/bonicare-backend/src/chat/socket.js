@@ -16,8 +16,11 @@ export const initSocket = async (server) => {
     socket.on('sendMessage', async (data) => {
       try {
         const message = await saveMessage(data);
-        await sendNotification(data.receiverId, 'chat_message', 'push', data.content);
         io.to(data.conversationId).emit('newMessage', message);
+        if (data.receiverId) {
+          void sendNotification(data.receiverId, 'chat_message', 'push', data.content)
+            .catch((err) => console.error('Chat notification failed:', err.message));
+        }
       } catch (err) {
         socket.emit('error', 'Message could not be saved.');
       }

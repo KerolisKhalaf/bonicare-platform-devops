@@ -29,7 +29,9 @@ export class VideoConsultationComponent implements OnInit {
   readonly webrtc = inject(WebRtcService);
   private readonly fb = inject(FormBuilder);
 
+  readonly user = this.auth.user;
   readonly appointments = signal<Appointment[]>([]);
+  readonly selectedAppointment = signal<Appointment | null>(null);
   readonly selectedAppointmentId = signal<string | null>(null);
   readonly chatMessage = signal('');
   readonly chatMessages = signal<Array<{ content: string; sender: string }>>([]);
@@ -52,6 +54,7 @@ export class VideoConsultationComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.socket.connectSignaling();
     const source$ = this.auth.hasRole('patient')
       ? this.appointmentApi.getMyAppointments()
       : this.doctorApi.getAppointments();
@@ -73,9 +76,24 @@ export class VideoConsultationComponent implements OnInit {
   async startCall(): Promise<void> {
     const id = this.appointmentForm.getRawValue().appointmentId;
     if (!id) return;
+    if (this.selectedAppointment()?.['_id'] !== id) {
+      this.onAppointmentSelected();
+    }
     this.selectedAppointmentId.set(id);
     this.socket.joinConversation(id);
     await this.webrtc.startCall(id);
+  }
+
+  onAppointmentSelected(): void {
+    const id = this.appointmentForm.getRawValue().appointmentId;
+    const appointment = this.appointments().find((item) => item._id === id) ?? null;
+    this.selectedAppointment.set(appointment);
+    this.selectedAppointmentId.set(id || null);
+    this.chatMessages.set([]);
+    if (id) {
+      this.socket.joinConversation(id);
+      this.webrtc.joinCall(id);
+    }
   }
 
   endCall(): void {
@@ -92,10 +110,27 @@ export class VideoConsultationComponent implements OnInit {
     this.socket.sendMessage({
       conversationId: aptId,
       senderId: user.id,
-      receiverId: '',
+      receiverId: this.getChatRecipientId(),
       content,
     });
-    this.chatMessages.update((list) => [...list, { content, sender: user.id }]);
     this.chatMessage.set('');
+  }
+
+  isOwnMessage(senderId: string): boolean {
+    return senderId === this.user()?.id;
+  }
+
+  getMessageSenderLabel(senderId: string): string {
+    return this.isOwnMessage(senderId) ? 'You' : this.auth.hasRole('patient') ? 'Doctor' : 'Patient';
+  }
+
+  private getChatRecipientId(): string {
+    const appointment = this.selectedAppointment();
+    if (!appointment) return '';
+
+    const participant = this.auth.hasRole('patient') ? appointment.doctorId : appointment.patientId;
+    if (typeof participant === 'string') return participant;
+    if (participant && typeof participant === 'object' && 'id' in participant) return participant.id;
+    return '';
   }
 }
