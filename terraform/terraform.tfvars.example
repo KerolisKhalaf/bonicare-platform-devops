@@ -31,3 +31,6 @@ disk_free_alert_threshold  = 20
 jenkins_subnet_name             = "jenkins-subnet"
 jenkins_subnet_address_prefixes = ["10.0.2.0/24"]
 jenkins_nsg_name = "jenkins-nsg"
+jenkins_public_ip_name              = "jenkins-pip"
+jenkins_public_ip_allocation_method = "Static"
+jenkins_public_ip_sku               = "Standard"

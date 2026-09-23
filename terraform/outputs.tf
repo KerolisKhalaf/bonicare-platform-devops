@@ -106,3 +106,17 @@ output "jenkins_nsg_name" {
   description = "Name of the Jenkins network security group"
   value       = module.jenkins_security.nsg_name
 }
+output "jenkins_public_ip_id" {
+  description = "ID of the Jenkins public IP"
+  value       = module.jenkins_public_ip.public_ip_id
+}
+
+output "jenkins_public_ip_address" {
+  description = "Public IP address of the Jenkins VM"
+  value       = module.jenkins_public_ip.public_ip_address
+}
+
+output "jenkins_public_ip_name" {
+  description = "Name of the Jenkins public IP"
+  value       = module.jenkins_public_ip.public_ip_name
+}

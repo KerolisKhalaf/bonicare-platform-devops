@@ -99,3 +99,17 @@ variable "jenkins_nsg_name" {
   description = "Name of the Jenkins network security group"
   type        = string
 }
+variable "jenkins_public_ip_name" {
+  description = "Name of the Jenkins public IP"
+  type        = string
+}
+
+variable "jenkins_public_ip_allocation_method" {
+  description = "Allocation method for the Jenkins public IP"
+  type        = string
+}
+
+variable "jenkins_public_ip_sku" {
+  description = "SKU of the Jenkins public IP"
+  type        = string
+}

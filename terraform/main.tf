@@ -70,3 +70,12 @@ module "jenkins_security" {
   location            = var.location
   nsg_name            = var.jenkins_nsg_name
 }
+module "jenkins_public_ip" {
+  source = "./modules/public-ip"
+
+  resource_group_name = module.resource_group.name
+  location            = var.location
+  public_ip_name      = var.jenkins_public_ip_name
+  allocation_method   = var.jenkins_public_ip_allocation_method
+  sku                 = var.jenkins_public_ip_sku
+}
