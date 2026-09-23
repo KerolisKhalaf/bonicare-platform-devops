@@ -97,3 +97,12 @@ output "data_collection_rule_association_id" {
   description = "ID of the VM Data Collection Rule association"
   value       = module.monitoring.data_collection_rule_association_id
 }
+output "jenkins_nsg_id" {
+  description = "ID of the Jenkins network security group"
+  value       = module.jenkins_security.nsg_id
+}
+
+output "jenkins_nsg_name" {
+  description = "Name of the Jenkins network security group"
+  value       = module.jenkins_security.nsg_name
+}

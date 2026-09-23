@@ -95,3 +95,7 @@ variable "jenkins_subnet_address_prefixes" {
   description = "Address prefixes for the Jenkins subnet"
   type        = list(string)
 }
+variable "jenkins_nsg_name" {
+  description = "Name of the Jenkins network security group"
+  type        = string
+}

@@ -63,3 +63,10 @@ module "monitoring" {
   memory_alert_threshold    = var.memory_alert_threshold
   disk_free_alert_threshold = var.disk_free_alert_threshold
 }
+module "jenkins_security" {
+  source = "./modules/jenkins-security"
+
+  resource_group_name = module.resource_group.name
+  location            = var.location
+  nsg_name            = var.jenkins_nsg_name
+}
