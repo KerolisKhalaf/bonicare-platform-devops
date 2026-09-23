@@ -14,11 +14,12 @@ spec:
         app: webrtc
     spec:
       containers:
-      - name: webrtc
-        image: YOUR_WEBRTC_IMAGE:latest
-        ports:
-        - containerPort: 5002
-          protocol: TCP
+        - name: webrtc
+          image: keroliskhalaf1/bonicare-webrtc:937119b23d39
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5002
+              protocol: TCP
 ---
 apiVersion: v1
 kind: Service
@@ -30,7 +31,7 @@ spec:
   selector:
     app: webrtc
   ports:
-  - port: 5002
-    targetPort: 5002
-    nodePort: 30502
-    protocol: TCP
+    - port: 5002
+      targetPort: 5002
+      nodePort: 30502
+      protocol: TCP

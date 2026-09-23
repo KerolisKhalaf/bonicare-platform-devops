@@ -9,7 +9,6 @@ variable "NAMESPACE" {
 variable "VERSION" {
 }
 
-# مجموعة الاستهدافات للخدمات
 group "default" {
   targets = [
     "backend",
@@ -18,7 +17,7 @@ group "default" {
     "webrtc"
   ]
 }
-# الإعدادات العامة المشتركة (DRY Principle)
+
 target "_common" {
 
   platforms = [
@@ -33,7 +32,6 @@ target "_common" {
     project = "BoniCare"
     team    = "DevOps"
   }
-
 }
 
 target "backend" {
@@ -41,13 +39,19 @@ target "backend" {
   inherits = ["_common"]
 
   context = "./apps/bonicare-backend"
-
   dockerfile = "Dockerfile"
 
   tags = [
     "${REGISTRY}/${NAMESPACE}/bonicare-backend:${VERSION}"
   ]
 
+  cache-from = [
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-backend-cache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-backend-cache,mode=min"
+  ]
 }
 
 target "frontend" {
@@ -55,13 +59,19 @@ target "frontend" {
   inherits = ["_common"]
 
   context = "./apps/bonicare-frontend"
-
   dockerfile = "Dockerfile"
 
   tags = [
     "${REGISTRY}/${NAMESPACE}/bonicare-frontend:${VERSION}"
   ]
 
+  cache-from = [
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-frontend-cache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-frontend-cache,mode=min"
+  ]
 }
 
 target "ai-service" {
@@ -69,13 +79,19 @@ target "ai-service" {
   inherits = ["_common"]
 
   context = "./apps/ai-service"
-
   dockerfile = "Dockerfile"
 
   tags = [
     "${REGISTRY}/${NAMESPACE}/bonicare-ai-service:${VERSION}"
   ]
 
+  cache-from = [
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-ai-service-cache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-ai-service-cache,mode=min"
+  ]
 }
 
 target "webrtc" {
@@ -83,11 +99,17 @@ target "webrtc" {
   inherits = ["_common"]
 
   context = "./apps/webrtc"
-
   dockerfile = "Dockerfile"
 
   tags = [
     "${REGISTRY}/${NAMESPACE}/bonicare-webrtc:${VERSION}"
   ]
 
+  cache-from = [
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-webrtc-cache"
+  ]
+
+  cache-to = [
+    "type=registry,ref=${REGISTRY}/${NAMESPACE}/bonicare-webrtc-cache,mode=min"
+  ]
 }

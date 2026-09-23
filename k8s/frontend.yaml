@@ -14,10 +14,11 @@ spec:
         app: frontend
     spec:
       containers:
-      - name: frontend
-        image: keroliskhalaf1/telemedicine_frontend:37
-        ports:
-        - containerPort: 4200
+        - name: frontend
+          image: keroliskhalaf1/bonicare-frontend:<COMMIT_SHA>
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4200
 ---
 apiVersion: v1
 kind: Service
@@ -28,7 +29,7 @@ spec:
   selector:
     app: frontend
   ports:
-  - port: 4200
-    targetPort: 4200
-    nodePort: 30200
+    - port: 4200
+      targetPort: 4200
+      nodePort: 30200
   type: NodePort
