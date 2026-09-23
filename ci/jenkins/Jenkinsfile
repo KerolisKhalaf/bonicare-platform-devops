@@ -88,15 +88,42 @@ pipeline {
         stage('Validate Docker Configuration') {
             steps {
 
-                sh '''
-                    docker buildx bake \
-                        --print \
-                        --file ci/docker-bake.hcl
+                withCredentials([
+                    file(
+                        credentialsId: 'bonicare-env',
+                        variable: 'ENV_FILE'
+                    )
+                ]) {
 
-                    docker compose \
-                        -f compose/compose.yaml \
-                        config -q
-                '''
+                    sh '''
+                        set -eu
+
+                        echo "========================================"
+                        echo "Validating Docker configuration"
+                        echo "========================================"
+
+                        # Provide .env where compose/compose.yaml expects it
+                        cp "$ENV_FILE" "$WORKSPACE/.env"
+
+                        # Always remove the temporary .env after validation
+                        trap 'rm -f "$WORKSPACE/.env"' EXIT
+
+                        echo "Validating Docker Bake configuration..."
+
+                        docker buildx bake \
+                            --print \
+                            --file ci/docker-bake.hcl \
+                            >/dev/null
+
+                        echo "Validating Docker Compose configuration..."
+
+                        docker compose \
+                            -f compose/compose.yaml \
+                            config -q
+
+                        echo "Docker configuration validation passed."
+                    '''
+                }
             }
         }
 
