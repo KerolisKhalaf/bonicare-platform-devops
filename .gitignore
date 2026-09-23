@@ -51,3 +51,11 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+
+# Ansible local secrets and generated files
+.vault_pass
+*.retry
+infra/ansible/inventory/local.ini
+infra/ansible/inventory/local.*
+infra/ansible/generated/
+infra/ansible/.cache/
