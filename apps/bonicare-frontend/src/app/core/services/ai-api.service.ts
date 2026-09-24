@@ -20,7 +20,7 @@ export class AiApiService {
   predictBoneFracture(file: File) {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<{ status: string; data: BoneFractureResult }>(
+    return this.http.post<{ status: string; data: AiReport; result: BoneFractureResult }>(
       `${this.baseUrl}/bone-fracture`,
       formData
     );

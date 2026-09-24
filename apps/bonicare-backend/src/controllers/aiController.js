@@ -57,7 +57,7 @@ import { safeUnlink } from '../utils/fileUtils.js';
  */
 export const getAndSavePrediction = async (req, res) => {
     try {
-        const { patientId, fileId, features } = req.body;
+        const { fileId, features } = req.body;
 
         // Validate features only
         if (!features || !Array.isArray(features) || features.length !== 12) {
@@ -79,24 +79,13 @@ export const getAndSavePrediction = async (req, res) => {
             });
         }
 
-        // If no patientId => public usage
-        if (!patientId) {
-            return res.status(200).json({
-                status: 'success',
-                source: 'ai-only',
-                data: prediction
-            });
-        }
-
         // Check patient existence
-        const patient = await Patient.findById(patientId);
+        const patient = await Patient.findOne({ user: req.user.id });
 
         if (!patient) {
-            return res.status(200).json({
-                status: 'success',
-                source: 'ai-only',
-                warning: 'Patient not found, prediction not saved.',
-                data: prediction
+            return res.status(404).json({
+                status: 'error',
+                message: 'Patient profile not found'
             });
         }
 
@@ -105,7 +94,7 @@ export const getAndSavePrediction = async (req, res) => {
 
         const newReport = new AiReport({
             ...formattedData,
-            patient: patientId,
+            patient: patient._id,
             file: fileId || null
         });
 
@@ -126,7 +115,7 @@ export const getAndSavePrediction = async (req, res) => {
             }
 
             await Patient.findByIdAndUpdate(
-                patientId,
+                patient._id,
                 {
                     $set: {
                         'medical_history.last_ai_report': savedReport._id
@@ -144,7 +133,7 @@ export const getAndSavePrediction = async (req, res) => {
         return res.status(201).json({
             status: 'success',
             source: 'saved',
-            report: savedReport,
+            data: savedReport,
             prediction
         });
 
@@ -192,10 +181,33 @@ export const predictBoneFracture = async (req, res) => {
         }
 
         const result = await aiClient.predictBoneFracture(req.file);
+        const patient = await Patient.findOne({ user: req.user.id });
+
+        if (!patient) {
+            return res.status(404).json({
+                status: 'error',
+                message: 'Patient profile not found'
+            });
+        }
+
+        const confidence = typeof result.confidence === 'string'
+            ? Number.parseFloat(result.confidence) / 100
+            : Number(result.confidence ?? 0);
+        const savedReport = await new AiReport({
+            patient: patient._id,
+            model_name: 'bone-fracture-v1',
+            output_json: {
+                label: result.label,
+                prediction: result.prediction_score,
+                confidence: result.confidence,
+            },
+            confidence: Number.isFinite(confidence) ? confidence : 0,
+        }).save();
 
         return res.status(200).json({
             status: 'success',
-            data: result
+            data: savedReport,
+            result
         });
 
     } catch (error) {
