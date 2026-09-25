@@ -113,3 +113,12 @@ variable "jenkins_public_ip_sku" {
   description = "SKU of the Jenkins public IP"
   type        = string
 }
+variable "jenkins_vm_name" {
+  description = "Name of the Jenkins virtual machine"
+  type        = string
+}
+
+variable "jenkins_vm_size" {
+  description = "Size of the Jenkins virtual machine"
+  type        = string
+}

@@ -1,6 +1,7 @@
 import express from 'express';
 import upload from '../middleware/uploadMiddleware.js';
 import * as aiController from '../controllers/aiController.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -9,10 +10,8 @@ const router = express.Router();
  * @desc Get AI prediction and persist to database linked to patient
  * @access Private
  */
-console.log('AI Controller:', aiController);
-console.log('getAndSavePrediction:', aiController.getAndSavePrediction);
-router.post('/predict', aiController.getAndSavePrediction);
-router.post('/bone-fracture', upload.single('file'), aiController.predictBoneFracture);
+router.post('/predict', protect(['patient']), aiController.getAndSavePrediction);
+router.post('/bone-fracture', protect(['patient']), upload.single('file'), aiController.predictBoneFracture);
 
 /**
  * @route GET /api/v1/ai/health

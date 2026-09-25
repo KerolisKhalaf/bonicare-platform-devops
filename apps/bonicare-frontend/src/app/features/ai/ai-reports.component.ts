@@ -1,5 +1,4 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
-import { JsonPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AiApiService } from '../../core/services/ai-api.service';
 import { PatientApiService } from '../../core/services/patient-api.service';
@@ -7,7 +6,6 @@ import { CardComponent } from '../../shared/ui/card/card.component';
 import { ButtonComponent } from '../../shared/ui/button/button.component';
 import { InputComponent } from '../../shared/ui/input/input.component';
 import { BadgeComponent } from '../../shared/ui/badge/badge.component';
-import { DateFormatPipe } from '../../shared/pipes/date-format.pipe';
 import { ToastService } from '../../shared/ui/toast/toast.service';
 import { AiReport, BoneFractureResult } from '../../shared/models/api-response.model';
 
@@ -20,8 +18,6 @@ import { AiReport, BoneFractureResult } from '../../shared/models/api-response.m
     ButtonComponent,
     InputComponent,
     BadgeComponent,
-    DateFormatPipe,
-    JsonPipe,
   ],
   templateUrl: './ai-reports.component.html',
   styleUrl: './ai-reports.component.scss',
@@ -95,11 +91,31 @@ export class AiReportsComponent implements OnInit {
     this.fractureLoading.set(true);
     this.aiApi.predictBoneFracture(file).subscribe({
       next: (res) => {
-        this.fractureResult.set(res.data);
+        this.fractureResult.set(res.result);
+        this.reports.update((list) => [res.data, ...list]);
         this.toast.success('Bone fracture analysis complete');
         this.fractureLoading.set(false);
       },
       error: () => this.fractureLoading.set(false),
     });
+  }
+
+  getReportLabel(report: AiReport): string {
+    return `${this.getReportMode(report)} ${report.output_json.label ?? 'Unknown'}`;
+  }
+
+  getReportMode(report: AiReport): string {
+    return report.model_name.startsWith('bone-fracture')
+      ? 'Bone Fracture Detection'
+      : 'Lower Back Analysis';
+  }
+
+  getResultVariant(label: string | undefined): 'default' | 'success' | 'warning' | 'danger' {
+    const normalized = label?.toLowerCase() ?? '';
+    if (normalized.includes('normal') || normalized.includes('not fractured')) return 'success';
+    if (normalized.includes('fractured') || normalized.includes('hernia') || normalized.includes('stenosis')) {
+      return 'danger';
+    }
+    return 'warning';
   }
 }

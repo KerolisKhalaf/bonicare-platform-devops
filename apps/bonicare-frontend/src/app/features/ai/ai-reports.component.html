@@ -22,23 +22,12 @@
       </form>
 
       @if (lastPrediction()) {
-        <div class="result">
-          <h4>Latest Result</h4>
-          <p><strong>Model:</strong> {{ lastPrediction()!.model_name }}</p>
-          <p><strong>Prediction:</strong> {{ lastPrediction()!.output_json.prediction }}</p>
-          <p><strong>Label:</strong> {{ lastPrediction()!.output_json.label }}</p>
-          <p><strong>Confidence:</strong> {{ (lastPrediction()!.confidence * 100).toFixed(1) }}%</p>
-          @if (lastPrediction()!.output_json.probabilities) {
-            <div class="probabilities">
-              @for (prob of lastPrediction()!.output_json.probabilities; track $index) {
-                <div class="prob-bar">
-                  <span>Class {{ $index }}</span>
-                  <div class="bar"><div [style.width.%]="prob * 100"></div></div>
-                  <span>{{ (prob * 100).toFixed(1) }}%</span>
-                </div>
-              }
-            </div>
-          }
+        <div class="result result--summary">
+          <span>Lower Back Analysis</span>
+          <bc-badge
+            [label]="lastPrediction()!.output_json.label ?? 'Unknown'"
+            [variant]="getResultVariant(lastPrediction()!.output_json.label)"
+          />
         </div>
       }
     </bc-card>
@@ -50,9 +39,12 @@
       </label>
 
       @if (fractureResult()) {
-        <div class="result">
-          <h4>Fracture Analysis</h4>
-          <pre>{{ fractureResult() | json }}</pre>
+        <div class="result result--summary">
+          <span>Bone Fracture Detection</span>
+          <bc-badge
+            [label]="fractureResult()!.label ?? 'Unknown'"
+            [variant]="getResultVariant(fractureResult()!.label)"
+          />
         </div>
       }
     </bc-card>
@@ -68,10 +60,12 @@
         @for (report of reports(); track report._id) {
           <div class="report-item">
             <div>
-              <strong>{{ report.model_name }}</strong>
-              <span>{{ report.createdAt | dateFormat }}</span>
+              <strong>{{ getReportMode(report) }}</strong>
             </div>
-            <bc-badge [label]="(report.confidence * 100).toFixed(0) + '%'" variant="primary" />
+            <bc-badge
+              [label]="report.output_json.label ?? 'Unknown'"
+              [variant]="getResultVariant(report.output_json.label)"
+            />
           </div>
         }
       </div>
